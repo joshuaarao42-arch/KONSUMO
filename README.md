@@ -101,8 +101,6 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
   </tr>
 </table>
 
-> **Adding screenshots:** Create the `docs/screenshots/` folder in the repository, upload the six image files with the filenames above, and commit them. The images will then appear here automatically.
-
 ## Technology Stack
 
 | Technology | Purpose |
