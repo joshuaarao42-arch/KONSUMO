@@ -103,7 +103,7 @@ The six image slots below are ready for application screenshots. Save your scree
     </td>
     <td width="33%" align="center">
       <strong>6. Forecast & Insights</strong><br />
-      <img src="docs/screenshots/06-forecast-insights.png" alt="Forecast and insights screenshot placeholder" width="100%" />
+      <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/FORECAST.png?raw=true" width="100%" />
       <sub>`06-forecast-insights.png`</sub>
     </td>
   </tr>
