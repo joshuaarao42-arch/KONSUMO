@@ -20,15 +20,18 @@ from ..repository import (LookupError, ValidationError, add_record, delete_recor
                           get_record, list_records, update_record)
 from ..seed import seed as seed_db
 from . import views
+from .auth import AuthError, authenticate, create_session, create_user, delete_session, get_session_user
+from http.cookies import SimpleCookie
 
 RESOURCES = ("electricity", "water")
 
 
 class Response:
     def __init__(self, body="", status=200,
-                 content_type="text/html; charset=utf-8", redirect_to=None):
+                 content_type="text/html; charset=utf-8", redirect_to=None, headers=None):
         self.body, self.status = body, status
         self.content_type, self.redirect_to = content_type, redirect_to
+        self.headers = headers or {}
 
 
 def json_response(obj, status=200):
@@ -249,8 +252,41 @@ def make_handler(db):
                         form["_json"] = {}
                 else:
                     form = {k: v[0] for k, v in parse_qs(raw.decode()).items()}
+            cookies = SimpleCookie()
             try:
-                resp = route(method, path, query, form, db)
+                cookies.load(self.headers.get("Cookie", ""))
+            except Exception:
+                pass
+            morsel = cookies.get("konsumo_session")
+            token = morsel.value if morsel else ""
+            secure = "; Secure" if self.headers.get("X-Forwarded-Proto", "").lower() == "https" else ""
+
+            if path in ("/login", "/signup"):
+                if method == "GET":
+                    resp = Response(views.auth_page("login" if path == "/login" else "signup"))
+                elif method == "POST":
+                    try:
+                        if path == "/signup":
+                            user = create_user(form.get("name", ""), form.get("email", ""), form.get("password", ""), db)
+                        else:
+                            user = authenticate(form.get("email", ""), form.get("password", ""), db)
+                        session_token = create_session(user["id"], db)
+                        resp = Response(status=303, redirect_to="/",
+                            headers={"Set-Cookie": f"konsumo_session={session_token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600{secure}"})
+                    except AuthError as exc:
+                        resp = Response(views.auth_page("login" if path == "/login" else "signup", str(exc)), 400)
+                else:
+                    resp = Response(views.error_page("Method not allowed", __version__), 405)
+            elif path == "/logout" and method == "POST":
+                delete_session(token, db)
+                resp = Response(status=303, redirect_to="/login",
+                    headers={"Set-Cookie": "konsumo_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" + secure})
+            else:
+                user = get_session_user(token, db)
+                if not user:
+                    resp = Response(status=303, redirect_to="/login")
+                else:
+                    resp = route(method, path, query, form, db)
             except Exception as exc:  # pragma: no cover - safety net
                 resp = Response(views.error_page(f"Internal error: {exc}", __version__), 500)
             payload = (resp.body.encode("utf-8")
@@ -260,6 +296,8 @@ def make_handler(db):
             self.send_header("Content-Length", str(len(payload)))
             if resp.redirect_to:
                 self.send_header("Location", resp.redirect_to)
+            for header, value in resp.headers.items():
+                self.send_header(header, value)
             self.end_headers()
             if payload:
                 self.wfile.write(payload)
