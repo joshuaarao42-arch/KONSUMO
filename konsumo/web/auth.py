@@ -31,6 +31,10 @@ def create_user(name, email, password, db_path):
     salt, password_hash = _hash_password(password)
     try:
         with connect(db_path) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+            if existing:
+                raise AuthError("The initial account has already been created. Please log in.")
             cur = conn.execute("INSERT INTO users(name,email,password_salt,password_hash) VALUES (?,?,?,?)",
                                (name, email, salt, password_hash))
             return {"id": cur.lastrowid, "name": name, "email": email}
