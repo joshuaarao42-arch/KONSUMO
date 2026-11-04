@@ -76,7 +76,7 @@ The six image slots below are ready for application screenshots. Save your scree
   <tr>
     <td width="33%" align="center">
       <strong>1. Login</strong><br />
-      <img src="docs/screenshots/01-login.png" alt="Login page screenshot placeholder" width="100%" />
+      <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/SIGNUP.png?raw=true" width="100%" />
       <sub>`01-login.png`</sub>
     </td>
     <td width="33%" align="center">
