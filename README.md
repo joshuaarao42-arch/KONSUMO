@@ -1,5 +1,7 @@
-# Konsumo
-
+<p align="center">
+  <img src="IMAGES/KONSUMO-LOGO.svg" alt="Konsumo logo" width="112" />
+  <h1 align="center">Konsumo</h1>
+</p>
 <p align="center">
   <strong>A household utility monitoring and consumption analytics dashboard</strong>
   <br />
