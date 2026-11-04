@@ -33,6 +33,12 @@ python run.py
 
 Then open <http://127.0.0.1:5000>. The first run seeds a demo database automatically.
 
+## Accounts
+
+Konsumo includes account registration and login pages. Open the app and choose **Create an account** to register, then sign in with your email and password. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes, and browser sessions use an HTTP-only cookie.
+
+Accounts currently share one household consumption dataset, which is suitable when multiple household members use the same monitor. Use a persistent database/storage volume in production so account and session records survive redeploys.
+
 ## CLI
 
 ```bash
