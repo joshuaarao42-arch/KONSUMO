@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Konsumo logo</title>
+  <rect width="128" height="128" rx="24" fill="#172033"/>
+  <path d="M64 10C47 34 25 53 25 79a39 39 0 0 0 78 0C103 53 81 34 64 10Z" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m70 35-25 43h20l-9 27 29-47H64l6-23Z" fill="#55d6be" stroke="#55d6be" stroke-linejoin="round" stroke-width="2"/>
+</svg>
