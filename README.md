@@ -86,7 +86,7 @@ The six image slots below are ready for application screenshots. Save your scree
     </td>
     <td width="33%" align="center">
       <strong>3. Dashboard</strong><br />
-      <img src="docs/screenshots/03-dashboard.png" alt="Dashboard screenshot placeholder" width="100%" />
+      <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/DASHBOARD.png?raw=true" width="100%" />
       <sub>`03-dashboard.png`</sub>
     </td>
   </tr>
