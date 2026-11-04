@@ -79,34 +79,28 @@ The six image slots below are ready for application screenshots. Save your scree
     <td width="33%" align="center">
       <strong>1. Login</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/LOGIN.png?raw=true" width="100%" />
-      <sub>`01-login.png`</sub>
     </td>
     <td width="33%" align="center">
       <strong>2. Sign Up</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/SIGNUP.png?raw=true" width="100%" />
-      <sub>`02-signup.png`</sub>
     </td>
     <td width="33%" align="center">
       <strong>3. Dashboard</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/DASHBOARD.png?raw=true" width="100%" />
-      <sub>`03-dashboard.png`</sub>
     </td>
   </tr>
   <tr>
     <td width="33%" align="center">
       <strong>4. Records</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/RECORDS.png?raw=true" width="100%" />
-      <sub>`04-records.png`</sub>
     </td>
     <td width="33%" align="center">
       <strong>5. Analytics</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/ANALYTICS.png?raw=true" width="100%" />
-      <sub>`05-analytics.png`</sub>
     </td>
     <td width="33%" align="center">
       <strong>6. Forecast & Insights</strong><br />
       <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/FORECAST.png?raw=true" width="100%" />
-      <sub>`06-forecast-insights.png`</sub>
     </td>
   </tr>
 </table>
