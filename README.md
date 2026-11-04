@@ -35,9 +35,9 @@ Then open <http://127.0.0.1:5000>. The first run seeds a demo database automatic
 
 ## Accounts
 
-Konsumo includes account registration and login pages. Open the app and choose **Create an account** to register, then sign in with your email and password. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes, and browser sessions use an HTTP-only cookie.
+Konsumo includes account registration and login pages. On a fresh database, create the initial account, then sign in with its email and password. For safety, public registration is limited to the first account; later visitors must log in rather than create additional accounts. Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes, and browser sessions use an HTTP-only cookie.
 
-Accounts currently share one household consumption dataset, which is suitable when multiple household members use the same monitor. Use a persistent database/storage volume in production so account and session records survive redeploys.
+The initial account controls access to the household consumption dataset. Use a persistent database/storage volume in production so account and session records survive redeploys.
 
 ## CLI
 
