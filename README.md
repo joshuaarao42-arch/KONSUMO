@@ -332,6 +332,12 @@ Potential future improvements include:
 - Expanded automated tests and reporting.
 - More detailed tariff configuration and bill breakdowns.
 
+## Author
+
+**Joshua Arao**  
+Computer Science Student  
+University of Science and Technology of Southern Philippines
+
 ## License
 
 This project is distributed under the [MIT License](LICENSE).
