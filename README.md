@@ -93,7 +93,7 @@ The six image slots below are ready for application screenshots. Save your scree
   <tr>
     <td width="33%" align="center">
       <strong>4. Records</strong><br />
-      <img src="docs/screenshots/04-records.png" alt="Records page screenshot placeholder" width="100%" />
+      <img src="https://github.com/joshuaarao42-arch/KONSUMO/blob/main/IMAGES/RECORDS.png?raw=true" width="100%" />
       <sub>`04-records.png`</sub>
     </td>
     <td width="33%" align="center">
