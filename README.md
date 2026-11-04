@@ -70,10 +70,6 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 
 ## Screenshots
 
-The six image slots below are ready for application screenshots. Save your screenshots in `docs/screenshots/` using the exact filenames shown, or update the image paths to match your own filenames.
-
-**Recommended capture size:** 1440 × 900 pixels (or another consistent 16:9 desktop size). Capture the actual application UI and avoid including passwords, private account details, or sensitive household information.
-
 <table>
   <tr>
     <td width="33%" align="center">
