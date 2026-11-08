@@ -63,10 +63,10 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 - Generate household-saving suggestions using available consumption patterns.
 
 ### Account access
-- Sign up for the initial account on a fresh database and sign in through the login page.
+- Create an account through the signup page and sign in through the login page. Multiple accounts are supported.
 - Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes rather than plain text.
 - Browser sessions use server-side session records and an HTTP-only cookie.
-- Public registration is intentionally limited to the first account. The current application is designed around one household dataset; it does not yet provide separate, isolated datasets for multiple users.
+- Each account has its own isolated household readings, analytics, forecasts, and recommendations. Users cannot view, edit, or delete another account's records.
 
 ## Screenshots
 
@@ -166,14 +166,14 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser. On a new database, use the signup page to create the initial account.
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser. Use the signup page to create an account. Each account receives a separate, private household dataset.
 
 ### 5. Add demo data (optional)
 
-To populate the database with sample consumption readings, open another terminal in the project folder (with the virtual environment activated) and run:
+To populate one account with sample consumption readings, first create an account and find its numeric ID in the `users` table, then run:
 
 ```bash
-python -m konsumo.cli seed
+python -m konsumo.cli seed --user-id 1
 ```
 
 If the web server is already running, refresh the records or dashboard page to view the inserted data.
@@ -205,7 +205,7 @@ Start the web server through the CLI:
 python -m konsumo.cli serve
 ```
 
-The CLI also accepts options:
+The seed command requires `--user-id` to ensure sample records belong to a specific account. The CLI also accepts options:
 
 ```bash
 python -m konsumo.cli serve --host 127.0.0.1 --port 5000
@@ -295,9 +295,9 @@ Render supplies the `PORT` environment variable, which `run.py` reads automatica
 
 ### Important: database persistence
 
-The default SQLite database is stored in the application's filesystem. On hosting platforms, the filesystem may be temporary or replaced during redeploys/restarts. Configure a persistent disk and place the SQLite database on that persistent mount before using the hosted app for important household records. Otherwise, accounts, sessions, and consumption data may be lost when the instance is replaced.
+The default SQLite database is stored beside the application code for local development. On Render, attach a persistent disk to the web service (for example, mount it at `/var/data`) and set the environment variable `KONSUMO_DB_PATH=/var/data/konsumo.sqlite3`. Redeploy after saving the setting. The application creates the database directory if needed. Without a persistent disk, accounts, sessions, and consumption records can be lost when the service is restarted or redeployed.
 
-The current authentication model is intended for a single household account. It is not a multi-tenant system, and household records are not separated by user.
+The application supports multiple accounts. Every consumption record is linked to its owner, and all dashboard pages, analytics, forecasts, recommendations, and JSON endpoints filter by the authenticated account. Existing records in an upgraded database are assigned to the first account created after the upgrade.
 
 ## Development and Contribution
 
@@ -315,7 +315,7 @@ The repository currently does not include a dedicated automated test suite, so c
 ## Current Limitations
 
 - Only electricity and water resources are supported.
-- The account system supports one initial household account, not independent user workspaces.
+- Each registered account has a separate household workspace; there is no shared-household invitation feature yet.
 - There is no password-reset or email-verification workflow.
 - Forecast quality depends on the amount and consistency of recorded history.
 - Cost estimates depend on the tariff configuration and may not match a provider's complete bill, taxes, fees, or adjustments.
