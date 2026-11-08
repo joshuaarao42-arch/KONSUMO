@@ -295,7 +295,7 @@ Render supplies the `PORT` environment variable, which `run.py` reads automatica
 
 ### Important: database persistence
 
-The default SQLite database is stored beside the application code for local development. On Render, attach a persistent disk to the web service (for example, mount it at `/var/data`) and set the environment variable `KONSUMO_DB_PATH=/var/data/konsumo.sqlite3`. Redeploy after saving the setting. The application creates the database directory if needed. Without a persistent disk, accounts, sessions, and consumption records can be lost when the service is restarted or redeployed.
+The default SQLite database is stored beside the application code for local development. On Render, attach a persistent disk to the web service (for example, mount it at `/var/data`) and set the environment variable `KONSUMO_DB_PATH=/var/data/konsumo.sqlite3`. Redeploy after saving the setting. The application creates the database directory if needed and copies the previous local `konsumo.sqlite3` file to the persistent path on first startup when that file is still available. Back up your existing database before changing the mount or redeploying; a file already lost from Render's temporary filesystem cannot be recovered by the application. Without a persistent disk, accounts, sessions, and consumption records can be lost when the service is restarted or redeployed.
 
 The application supports multiple accounts. Every consumption record is linked to its owner, and all dashboard pages, analytics, forecasts, recommendations, and JSON endpoints filter by the authenticated account. Existing records in an upgraded database are assigned to the first account created after the upgrade.
 
