@@ -22,8 +22,8 @@ for res, color in (("electricity", "#f59e0b"), ("water", "#0ea5e9")):
     ax.set_title(f"Daily {res} usage — last 90 days"); fig.tight_layout()
     fig.savefig(os.path.join(OUT, f"daily_{res}.png"), dpi=130); plt.close(fig)
 
-    fc, _ = forecast_daily(res, db_path=DEFAULT_DB_PATH)
-    hist = daily_series(res, db_path=DEFAULT_DB_PATH).tail(60)
+    fc, _ = forecast_daily(res, db_path=DEFAULT_DB_PATH, user_id=USER_ID)
+    hist = daily_series(res, db_path=DEFAULT_DB_PATH, user_id=USER_ID).tail(60)
     fig, ax = plt.subplots(figsize=(9, 3.5))
     ax.plot(hist.index, hist.values, color="#94a3b8", label="history")
     ax.plot(fc.index, fc.values, color=color, ls="--", label="forecast")
@@ -32,7 +32,7 @@ for res, color in (("electricity", "#f59e0b"), ("water", "#0ea5e9")):
 
 fig, axes = plt.subplots(1, 2, figsize=(11, 3.5))
 for ax, res in zip(axes, ("electricity", "water")):
-    m = monthly_summary(res, months=14, db_path=DEFAULT_DB_PATH)
+    m = monthly_summary(res, months=14, db_path=DEFAULT_DB_PATH, user_id=USER_ID)
     ax.bar(m.index.strftime("%Y-%m"), m["usage"], color="#6366f1")
     ax.set_title(f"Monthly {res}"); ax.tick_params(axis="x", rotation=60)
 fig.tight_layout(); fig.savefig(os.path.join(OUT, "monthly_summary.png"), dpi=130)
