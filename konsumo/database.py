@@ -1,4 +1,5 @@
 import os
+import shutil
 import sqlite3
 
 SCHEMA = """
@@ -35,7 +36,17 @@ def connect(db_path):
     return conn
 
 def init_db(db_path):
-    os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
+    target_path = os.path.abspath(db_path)
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    # If a persistent path is configured, copy the previous local database
+    # once when it is still available, before initializing the new location.
+    configured_path = os.environ.get("KONSUMO_DB_PATH")
+    legacy_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "konsumo.sqlite3")
+    if (configured_path and target_path == os.path.abspath(configured_path)
+            and not os.path.exists(target_path) and os.path.isfile(legacy_path)
+            and os.path.abspath(legacy_path) != target_path):
+        shutil.copy2(legacy_path, target_path)
     with connect(db_path) as conn:
         conn.executescript(SCHEMA)
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(consumption)")}
