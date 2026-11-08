@@ -76,7 +76,7 @@ def auth_page(mode, error=None, values=None):
     signup = mode == "signup"
     heading = "Create your account" if signup else "Welcome back"
     subtitle = "Start making sense of your household utility use." if signup else "Sign in to continue to your household dashboard."
-    name_field = '<div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" value="{esc(values.get("name", ""))}" required></div>' if signup else ""
+    name_field = f'<div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" value="{esc(values.get("name", ""))}" required></div>' if signup else ""
     action = "/signup" if signup else "/login"
     alternate = 'Already have an account? <a href="/login">Log in</a>' if signup else 'New to Konsumo? <a href="/signup">Create an account</a>'
     error_html = f'<div class="auth-error" role="alert">{esc(error)}</div>' if error else ""
