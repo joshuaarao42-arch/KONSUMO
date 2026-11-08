@@ -40,24 +40,24 @@ def json_response(obj, status=200):
 
 # ---------------------------------------------------------------- pages
 
-def page_dashboard(p, q, form, db):
-    cards = [{"resource": r, "stats": usage_stats(r, db_path=db),
-              "mom": month_over_month(r, db_path=db)} for r in RESOURCES]
+def page_dashboard(p, q, form, db, user_id):
+    cards = [{"resource": r, "stats": usage_stats(r, db_path=db, user_id=user_id),
+              "mom": month_over_month(r, db_path=db, user_id=user_id)} for r in RESOURCES]
     try:
-        forecasts = forecast_all(db_path=db)
+        forecasts = forecast_all(db_path=db, user_id=user_id)
     except ValueError:
         forecasts = {}
-    anom = sum(len(detect_anomalies(r, db_path=db)) for r in RESOURCES)
+    anom = sum(len(detect_anomalies(r, db_path=db, user_id=user_id)) for r in RESOURCES)
     return Response(views.dashboard_page(cards, forecasts, anom, CURRENCY, __version__))
 
 
-def page_records(p, q, form, db):
+def page_records(p, q, form, db, user_id):
     resource = (q.get("resource") or [""])[0] or None
     query = (q.get("q") or [""])[0]
     page_no = max(1, int((q.get("page") or ["1"])[0]))
     limit = 25
     rows = list_records(resource=resource, limit=limit,
-                        offset=(page_no - 1) * limit, db_path=db)
+                        offset=(page_no - 1) * limit, db_path=db, user_id=user_id)
     if query:
         rows = [r for r in rows
                 if query.lower() in (r["notes"] or "").lower()
@@ -66,18 +66,18 @@ def page_records(p, q, form, db):
                                        CURRENCY, __version__))
 
 
-def page_record_new(p, q, form, db):
+def page_record_new(p, q, form, db, user_id):
     return Response(views.record_form_page(None, CURRENCY, __version__))
 
 
-def page_record_edit(p, q, form, db):
-    record = get_record(int(p[0]), db_path=db)
+def page_record_edit(p, q, form, db, user_id):
+    record = get_record(int(p[0]), db_path=db, user_id=user_id)
     if not record:
         return Response(views.error_page(f"Record {p[0]} not found", __version__), 404)
     return Response(views.record_form_page(record, CURRENCY, __version__))
 
 
-def _save_record(record_id, form, db):
+def _save_record(record_id, form, db, user_id):
     try:
         fields = dict(
             resource=form.get("resource"),
@@ -90,35 +90,35 @@ def _save_record(record_id, form, db):
         return Response(views.error_page("Amount/cost must be numbers", __version__), 400)
     try:
         if record_id is None:
-            add_record(db_path=db, **fields)
+            add_record(db_path=db, user_id=user_id, **fields)
         else:
-            update_record(record_id, db_path=db, **fields)
+            update_record(record_id, db_path=db, user_id=user_id, **fields)
     except ValidationError as exc:
         return Response(views.error_page(str(exc), __version__), 400)
     return Response(status=302, redirect_to="/records")
 
 
-def save_record_new(p, q, form, db):
-    return _save_record(None, form, db)
+def save_record_new(p, q, form, db, user_id):
+    return _save_record(None, form, db, user_id)
 
 
-def save_record_edit(p, q, form, db):
-    return _save_record(int(p[0]), form, db)
+def save_record_edit(p, q, form, db, user_id):
+    return _save_record(int(p[0]), form, db, user_id)
 
 
-def record_delete(p, q, form, db):
+def record_delete(p, q, form, db, user_id):
     try:
-        delete_record(int(p[0]), db_path=db)
+        delete_record(int(p[0]), db_path=db, user_id=user_id)
     except LookupError:
         return Response(views.error_page(f"Record {p[0]} not found", __version__), 404)
     return Response(status=302, redirect_to="/records")
 
 
-def page_analytics(p, q, form, db):
+def page_analytics(p, q, form, db, user_id):
     return Response(views.analytics_page(CURRENCY, __version__))
 
 
-def page_forecast(p, q, form, db):
+def page_forecast(p, q, form, db, user_id):
     try:
         fcs = forecast_all(db_path=db)
     except ValueError as exc:
@@ -126,20 +126,20 @@ def page_forecast(p, q, form, db):
     return Response(views.forecast_page(fcs, CURRENCY, __version__))
 
 
-def page_anomalies(p, q, form, db):
+def page_anomalies(p, q, form, db, user_id):
     data = {r: detect_anomalies(r, db_path=db) for r in RESOURCES}
     return Response(views.anomalies_page(data, CURRENCY, __version__))
 
 
-def page_recommendations(p, q, form, db):
-    tips = generate_recommendations(db_path=db)
+def page_recommendations(p, q, form, db, user_id):
+    tips = generate_recommendations(db_path=db, user_id=user_id)
     return Response(views.recommendations_page(tips, CURRENCY, __version__))
 
 
 # ---------------------------------------------------------------- JSON API
 
-def api_daily(p, q, form, db):
-    s = daily_series(p[0], db_path=db)
+def api_daily(p, q, form, db, user_id):
+    s = daily_series(p[0], db_path=db, user_id=user_id)
     start = (q.get("start") or [None])[0]
     if start:
         s = s[s.index >= start]
@@ -147,17 +147,17 @@ def api_daily(p, q, form, db):
                           for d, v in s.items()])
 
 
-def api_monthly(p, q, form, db):
-    m = monthly_summary(p[0], months=14, db_path=db)
+def api_monthly(p, q, form, db, user_id):
+    m = monthly_summary(p[0], months=14, db_path=db, user_id=user_id)
     return json_response([{"month": i.strftime("%Y-%m"),
                            "usage": round(float(r["usage"]), 2),
                            "cost": round(float(r["cost"]), 2)}
                           for i, r in m.iterrows()])
 
 
-def api_forecast(p, q, form, db):
+def api_forecast(p, q, form, db, user_id):
     try:
-        fc, metrics = forecast_daily(p[0], db_path=db)
+        fc, metrics = forecast_daily(p[0], db_path=db, user_id=user_id)
     except ValueError as exc:
         return json_response({"error": str(exc)}, 400)
     hist = daily_series(p[0], db_path=db).tail(60)
@@ -170,11 +170,11 @@ def api_forecast(p, q, form, db):
     })
 
 
-def api_stats(p, q, form, db):
-    return json_response(usage_stats(p[0], db_path=db))
+def api_stats(p, q, form, db, user_id):
+    return json_response(usage_stats(p[0], db_path=db, user_id=user_id))
 
 
-def api_quote(p, q, form, db):
+def api_quote(p, q, form, db, user_id):
     body = form.get("_json") or {}
     try:
         amount = float(body.get("amount"))
@@ -189,12 +189,12 @@ def api_quote(p, q, form, db):
                           "cost": tiered_cost(amount, resource), "currency": CURRENCY})
 
 
-def api_seed(p, q, form, db):
-    created = seed_db(db_path=db, days=int(form.get("days", 425)), verbose=False)
+def api_seed(p, q, form, db, user_id):
+    created = seed_db(db_path=db, days=int(form.get("days", 425)), verbose=False, user_id=user_id)
     return json_response({"created": created})
 
 
-def static_css(p, q, form, db):
+def static_css(p, q, form, db, user_id):
     return Response(views.STYLE, 200, "text/css; charset=utf-8")
 
 
@@ -220,13 +220,13 @@ ROUTES = [
 ]
 
 
-def route(method, path, query, form, db):
+def route(method, path, query, form, db, user_id):
     for m, pattern, fn in ROUTES:
         if m != method:
             continue
         match = re.match(pattern, path)
         if match:
-            return fn(match.groups(), query, form, db)
+            return fn(match.groups(), query, form, db, user_id)
     return Response(views.error_page("Page not found", __version__), 404)
 
 
@@ -275,7 +275,7 @@ def make_handler(db):
                             resp = Response(status=303, redirect_to="/",
                                 headers={"Set-Cookie": f"konsumo_session={session_token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600{secure}"})
                         except AuthError as exc:
-                            resp = Response(views.auth_page("login" if path == "/login" else "signup", str(exc)), 400)
+                            resp = Response(views.auth_page("login" if path == "/login" else "signup", str(exc), form), 400)
                     else:
                         resp = Response(views.error_page("Method not allowed", __version__), 405)
                 elif path == "/logout" and method == "POST":
@@ -287,7 +287,7 @@ def make_handler(db):
                     if not user:
                         resp = Response(status=303, redirect_to="/login")
                     else:
-                        resp = route(method, path, query, form, db)
+                        resp = route(method, path, query, form, db, user["id"])
     
             except Exception as exc:  # pragma: no cover - safety net
                 resp = Response(views.error_page(f"Internal error: {exc}", __version__), 500)
