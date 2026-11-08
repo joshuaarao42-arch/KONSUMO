@@ -36,6 +36,9 @@ def create_user(name, email, password, db_path):
             cur = conn.execute(
                 "INSERT INTO users(name,email,password_salt,password_hash) VALUES (?,?,?,?)",
                 (name, email, salt, password_hash))
+            # Preserve existing pre-multi-account readings by assigning them to the
+            # first account created after this upgrade.
+            conn.execute("UPDATE consumption SET user_id=? WHERE user_id IS NULL", (cur.lastrowid,))
             return {"id": cur.lastrowid, "name": name, "email": email}
     except sqlite3.IntegrityError:
         raise AuthError("An account with that email already exists. Please log in.")
