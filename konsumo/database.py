@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 SCHEMA = """
@@ -34,6 +35,7 @@ def connect(db_path):
     return conn
 
 def init_db(db_path):
+    os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
     with connect(db_path) as conn:
         conn.executescript(SCHEMA)
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(consumption)")}
