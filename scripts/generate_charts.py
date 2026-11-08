@@ -1,5 +1,5 @@
 """Render README screenshots with matplotlib (docs/screenshots/*.png)."""
-import os, sys
+import argparse, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib
 matplotlib.use("Agg")
@@ -8,11 +8,15 @@ from konsumo.analytics import daily_series, monthly_summary, detect_anomalies
 from konsumo.config import DEFAULT_DB_PATH
 from konsumo.forecasting import forecast_daily
 
+parser = argparse.ArgumentParser(description="Generate charts for one Konsumo account")
+parser.add_argument("--user-id", type=int, required=True, help="Account ID whose data should appear in the charts")
+USER_ID = parser.parse_args().user_id
+
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "screenshots")
 os.makedirs(OUT, exist_ok=True)
 
 for res, color in (("electricity", "#f59e0b"), ("water", "#0ea5e9")):
-    s = daily_series(res, db_path=DEFAULT_DB_PATH).tail(90)
+    s = daily_series(res, db_path=DEFAULT_DB_PATH, user_id=USER_ID).tail(90)
     fig, ax = plt.subplots(figsize=(9, 3.5))
     ax.plot(s.index, s.values, color=color)
     ax.set_title(f"Daily {res} usage — last 90 days"); fig.tight_layout()
