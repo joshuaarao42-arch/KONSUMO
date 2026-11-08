@@ -71,11 +71,12 @@ def anomalies_page(data,currency,version): return page('Anomalies',_top('Attenti
 def recommendations_page(tips,currency,version): return page('Recommendations',_top('Guidance','Ways to save','Small changes can make a measurable difference.')+'<div class="card"><ul class="list">'+''.join(f'<li>✦ &nbsp;{esc(t)}</li>' for t in tips)+'</ul></div>',version,'/recommendations')
 
 
-def auth_page(mode, error=None):
+def auth_page(mode, error=None, values=None):
+    values = values or {}
     signup = mode == "signup"
     heading = "Create your account" if signup else "Welcome back"
     subtitle = "Start making sense of your household utility use." if signup else "Sign in to continue to your household dashboard."
-    name_field = '<div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" required></div>' if signup else ""
+    name_field = '<div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" value="{esc(values.get("name", ""))}" required></div>' if signup else ""
     action = "/signup" if signup else "/login"
     alternate = 'Already have an account? <a href="/login">Log in</a>' if signup else 'New to Konsumo? <a href="/signup">Create an account</a>'
     error_html = f'<div class="auth-error" role="alert">{esc(error)}</div>' if error else ""
@@ -93,7 +94,7 @@ def auth_page(mode, error=None):
 <div class="auth-brand"><span class="auth-logo"><svg viewBox="0 0 42 57" role="img" aria-label="Konsumo logo"><path d="M21 2.5C16 9.5 3.5 23.5 3.5 34.5a17.5 17.5 0 0 0 35 0C38.5 23.5 26 9.5 21 2.5Z" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="m23.5 13-12 23h9l-2 12 12-25h-9l2-10Z" fill="#55d6be" stroke="#55d6be" stroke-linejoin="round"/></svg></span>Konsumo</div><section class="auth-card">
 <h1>{heading}</h1><p class="sub">{subtitle}</p>{error_html}
 <form method="post" action="{action}">{name_field}
-<div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required></div>
+<div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" value="{esc(values.get("email", ""))}" required></div>
 <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="{autocomplete}" minlength="8" maxlength="128" placeholder="{placeholder}" required>{password_hint}</div>
 <button class="submit" type="submit">{button}</button></form><p class="switch">{alternate}</p>
 </section></main></body></html>'''
