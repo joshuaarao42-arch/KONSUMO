@@ -24,8 +24,6 @@ CREATE TABLE IF NOT EXISTS consumption (
  cost REAL,
  notes TEXT NOT NULL DEFAULT ''
 );
-CREATE INDEX IF NOT EXISTS idx_consumption_user_resource_date
- ON consumption(user_id, resource, recorded_at);
 """
 
 def connect(db_path):
