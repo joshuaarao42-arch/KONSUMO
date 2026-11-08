@@ -120,14 +120,14 @@ def page_analytics(p, q, form, db, user_id):
 
 def page_forecast(p, q, form, db, user_id):
     try:
-        fcs = forecast_all(db_path=db)
+        fcs = forecast_all(db_path=db, user_id=user_id)
     except ValueError as exc:
         return Response(views.forecast_page({}, CURRENCY, __version__, str(exc)))
     return Response(views.forecast_page(fcs, CURRENCY, __version__))
 
 
 def page_anomalies(p, q, form, db, user_id):
-    data = {r: detect_anomalies(r, db_path=db) for r in RESOURCES}
+    data = {r: detect_anomalies(r, db_path=db, user_id=user_id) for r in RESOURCES}
     return Response(views.anomalies_page(data, CURRENCY, __version__))
 
 
@@ -160,7 +160,7 @@ def api_forecast(p, q, form, db, user_id):
         fc, metrics = forecast_daily(p[0], db_path=db, user_id=user_id)
     except ValueError as exc:
         return json_response({"error": str(exc)}, 400)
-    hist = daily_series(p[0], db_path=db).tail(60)
+    hist = daily_series(p[0], db_path=db, user_id=user_id).tail(60)
     return json_response({
         "metrics": metrics,
         "points": [{"date": d.strftime("%Y-%m-%d"), "value": round(float(v), 3)}
