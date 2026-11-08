@@ -180,7 +180,7 @@ If the web server is already running, refresh the records or dashboard page to v
 
 ## Using the Application
 
-1. **Create the initial account** on the signup page when using a fresh database.
+1. **Create an account** on the signup page.
 2. **Sign in** with the email and password associated with that account.
 3. **Add meter readings** for electricity or water, including the reading date and amount.
 4. **Review records** to check, edit, or remove saved entries.
