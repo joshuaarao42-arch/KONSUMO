@@ -43,6 +43,10 @@ def connect(db_path=None):
 def init_db(db_path=None):
     if _pg_url(db_path):
         with connect(db_path) as c:
+            # Serialize cold-start schema setup across concurrent Vercel functions.
+            # Without this transaction-scoped lock, simultaneous CREATE TABLE IF NOT
+            # EXISTS statements can race while PostgreSQL creates the table's row type.
+            c.execute("SELECT pg_advisory_xact_lock(hashtext('konsumo_schema_init'))")
             for sql in PG_SCHEMA: c.execute(sql)
             c.execute("ALTER TABLE consumption ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE CASCADE")
             first = c.execute("SELECT id FROM users ORDER BY id LIMIT 1").fetchone()
