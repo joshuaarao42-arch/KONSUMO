@@ -3,6 +3,9 @@ from html import escape as esc
 STYLE = r'''
 :root{--ink:#172033;--muted:#718096;--line:#e5eaf2;--bg:#f5f7fb;--blue:#356ae6;--teal:#12a594;--orange:#f59e0b;--red:#e05252}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}a{text-decoration:none;color:inherit}.shell{display:flex;min-height:100vh}.side{width:235px;background:#101a2e;color:#b9c6db;padding:26px 15px;position:fixed;inset:0 auto 0 0}.brand{display:flex;gap:10px;align-items:center;color:#fff;font-size:22px;font-weight:800;padding:0 12px 34px}.mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#55d6be,#4178ee)}.nav-title{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#73819c;padding:0 12px 10px}.nav a{display:flex;gap:12px;padding:11px 12px;border-radius:9px;margin:3px 0;color:#aebbd1}.nav a:hover,.nav a.active{background:#1d2c49;color:#fff}.main{margin-left:235px;width:calc(100% - 235px);padding:34px 42px}.top{display:flex;justify-content:space-between;gap:18px;margin-bottom:28px}.eyebrow{font-size:12px;color:var(--blue);font-weight:800;text-transform:uppercase;letter-spacing:1px}.title{font-size:32px;line-height:1.15;margin:6px 0}.subtitle,.label{color:var(--muted)}.btn{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 15px;font-weight:700}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(4,1fr);margin-bottom:22px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:21px;box-shadow:0 10px 30px #1f304f12}.stat{display:flex;justify-content:space-between}.value{font-size:28px;font-weight:800;margin-top:8px}.icon{width:39px;height:39px;border-radius:11px;display:grid;place-items:center;background:#edf3ff;color:var(--blue);font-weight:800}.two{grid-template-columns:1.4fr .8fr}.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.head h2{font-size:17px;margin:0}.metric{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}.metric:last-child{border:0}.list{list-style:none;padding:0;margin:0}.list li{padding:13px 0;border-bottom:1px solid var(--line)}table{width:100%;border-collapse:collapse}th{text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;padding:12px 10px;border-bottom:1px solid var(--line)}td{padding:14px 10px;border-bottom:1px solid var(--line)}.pill{padding:4px 8px;border-radius:99px;font-size:12px;font-weight:700;background:#eef3ff;color:var(--blue)}.empty{text-align:center;color:var(--muted);padding:35px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:6px}.full{grid-column:1/-1}.field label{font-weight:700;font-size:13px}.field input,.field select{border:1px solid #dbe2ed;border-radius:8px;padding:11px;font:inherit}.actions{display:flex;gap:10px;margin-top:18px}.footer{color:var(--muted);font-size:12px;margin-top:30px}@media(max-width:850px){.side{width:68px}.brand{font-size:0;padding:0 10px 30px}.nav-title,.nav span{display:none}.nav a{justify-content:center}.main{margin-left:68px;width:calc(100% - 68px);padding:24px}.stats{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:600px){.main{padding:18px 12px}.top{display:block}.top .btn{margin-top:15px}.stats{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}}
+
+.analytics-stack{display:grid;gap:22px}.analytics-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#fff 0%,#f7faff 100%);border:1px solid #dfe7f3;border-radius:20px;padding:24px;box-shadow:0 18px 45px #1f304f10}.analytics-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#55d6be,#356ae6,#8aaeff)}.analytics-card-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.analytics-card-head h2{font-size:23px;letter-spacing:-.5px;margin:3px 0}.analytics-card-head p{color:var(--muted);margin:0;font-size:13px}.chart-kicker{font-size:10px;letter-spacing:1.4px;font-weight:850;color:#356ae6}.chart-unit{background:#edf3ff;color:#2858c9;border:1px solid #d8e5ff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800}.chart-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 16px}.chart-stats>div{background:#fff;border:1px solid #e6edf7;border-radius:12px;padding:12px 15px;min-width:0}.chart-stats span{display:block;color:var(--muted);font-size:11px;font-weight:700}.chart-stats b{display:block;font-size:20px;margin-top:4px;letter-spacing:-.3px}.chart-stats small{font-size:11px;color:var(--muted);font-weight:600}.chart-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 0}.range-switch{display:flex;gap:5px;background:#edf2f9;padding:4px;border-radius:10px}.range-switch button{border:0;background:transparent;color:#64748b;border-radius:7px;padding:7px 12px;font:750 11px system-ui;cursor:pointer}.range-switch button.selected{background:#fff;color:#2858c9;box-shadow:0 2px 7px #20395b18}.chart-caption{font-size:11px;color:var(--muted);text-align:right}.chart-stage{position:relative;margin-top:12px;min-height:260px;border-radius:16px;background:radial-gradient(ellipse at 50% 0%,#eaf2ff 0%,#f8fbff 55%,#f2f6fc 100%);overflow:hidden}.chart-glow{position:absolute;width:55%;height:70%;left:23%;top:12%;background:#8fb4ff24;filter:blur(45px);pointer-events:none}.chart-stage svg{position:relative;display:block;width:100%;height:auto;min-height:260px;z-index:1}.usage-column{cursor:crosshair;outline:none}.usage-column:focus rect{stroke:#172f70;stroke-width:2}.chart-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px}.chart-foot{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;margin-top:12px}.chart-foot>span:first-child{display:flex;align-items:center;gap:7px}.legend-dot{width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,#78a7ff,#244eb5);display:inline-block}@media(max-width:600px){.analytics-card{padding:16px}.chart-stats{gap:6px}.chart-stats>div{padding:9px}.chart-stats b{font-size:16px}.chart-toolbar{align-items:flex-start;flex-direction:column}.chart-caption{text-align:left}.chart-stage svg{min-height:190px}}
+
 '''
 
 def _nav(active):
@@ -35,32 +38,64 @@ def record_form_page(record,currency,version):
     return page(title,body,version,'/records')
 
 def analytics_page(currency,version):
-    chart = '''<div class="card"><div class="head"><h2>{name}</h2><span class="label">Daily usage · last 60 days</span></div><div style="height:280px"><canvas id="{id}" style="width:100%;height:100%"></canvas></div><p id="{id}-status" class="label">Loading usage data…</p></div>'''
-    script = '''<script>
-function drawUsage(id, resource) {
-  fetch('/api/daily/' + resource).then(r => r.json()).then(rows => {
-    const canvas = document.getElementById(id), box = canvas.parentElement;
-    const data = rows.slice(-60), ctx = canvas.getContext('2d');
-    const w = box.clientWidth, h = 250, dpr = window.devicePixelRatio || 1;
-    canvas.width = w*dpr; canvas.height = h*dpr; ctx.scale(dpr,dpr);
-    ctx.clearRect(0,0,w,h);
-    if (!data.length) return;
-    const max = Math.max(...data.map(x => x.value), 1), gap = 3;
-    const barW = Math.max(2, (w-gap*(data.length-1))/data.length);
-    data.forEach((item,i) => {
-      const bh = Math.max(2, item.value/max*(h-24));
-      const x = i*(barW+gap), y = h-bh-10;
-      const g = ctx.createLinearGradient(0,y,0,h); g.addColorStop(0,'#6b92f0'); g.addColorStop(1,'#356ae6');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.roundRect(x,y,barW,bh,4); ctx.fill();
-    });
-    document.getElementById(id+'-status').textContent =
-      data.length + ' readings · peak ' + max.toFixed(2) + ' units';
-  }).catch(() => document.getElementById(id+'-status').textContent='Unable to load usage data.');
-}
-drawUsage('electricity-chart','electricity'); drawUsage('water-chart','water');
+    chart = '''<section class="analytics-card">
+      <div class="analytics-card-head"><div><span class="chart-kicker">RESOURCE PERFORMANCE</span><h2>{name}</h2><p>Daily consumption with depth, scale and exact reading details.</p></div><span class="chart-unit">{unit}</span></div>
+      <div class="chart-stats" id="{id}-stats"><div><span>Total usage</span><b>—</b></div><div><span>Daily average</span><b>—</b></div><div><span>Peak day</span><b>—</b></div></div>
+      <div class="chart-toolbar"><div class="range-switch" role="group" aria-label="Chart date range"><button type="button" data-range="7">7D</button><button type="button" data-range="30">30D</button><button type="button" data-range="60" class="selected">60D</button><button type="button" data-range="90">90D</button></div><span class="chart-caption" id="{id}-caption">Loading readings…</span></div>
+      <div class="chart-stage"><div class="chart-glow"></div><svg id="{id}" viewBox="0 0 900 350" role="img" aria-label="{name} usage chart"></svg><div class="chart-empty" id="{id}-empty" hidden>No readings available for this period.</div></div>
+      <div class="chart-foot"><span><i class="legend-dot"></i> Recorded usage</span><span>Hover or tap a column for details</span></div>
+    </section>'''
+    script = r'''<script>
+(function(){
+ const configs=[{id:'electricity-chart',resource:'electricity',unit:'kWh'},{id:'water-chart',resource:'water',unit:'m³'}];
+ const NS='http://www.w3.org/2000/svg';
+ function el(tag,attrs,text){const n=document.createElementNS(NS,tag);Object.entries(attrs||{}).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;return n;}
+ function fmt(v){return Number(v).toLocaleString(undefined,{maximumFractionDigits:2});}
+ function draw(config,rows,range){
+   const svg=document.getElementById(config.id),empty=document.getElementById(config.id+'-empty'),caption=document.getElementById(config.id+'-caption'),stats=document.getElementById(config.id+'-stats');
+   const data=rows.slice(-range),clean=data.map(x=>({date:x.date,value:Number.isFinite(Number(x.value))?Math.max(0,Number(x.value)):0}));
+   svg.replaceChildren();
+   if(!clean.length){empty.hidden=false;caption.textContent='No data';stats.innerHTML='<div><span>Total usage</span><b>0</b></div><div><span>Daily average</span><b>0</b></div><div><span>Peak day</span><b>0</b></div>';return;}
+   empty.hidden=true;
+   const total=clean.reduce((s,x)=>s+x.value,0),peak=Math.max(...clean.map(x=>x.value)),avg=total/clean.length;
+   stats.innerHTML='<div><span>Total usage</span><b>'+fmt(total)+' <small>'+config.unit+'</small></b></div><div><span>Daily average</span><b>'+fmt(avg)+' <small>'+config.unit+'</small></b></div><div><span>Peak day</span><b>'+fmt(peak)+' <small>'+config.unit+'</small></b></div>';
+   caption.textContent=clean[0].date+' — '+clean[clean.length-1].date+' · '+clean.length+' days';
+   const W=900,H=350,left=66,right=30,top=24,bottom=62,plotW=W-left-right,plotH=H-top-bottom,max=Math.max(peak,1)*1.18,steps=4;
+   const defs=el('defs');
+   const front=el('linearGradient',{id:config.id+'-front',x1:'0',x2:'0',y1:'0',y2:'1'});front.append(el('stop',{offset:'0%','stop-color':'#78a7ff'}));front.append(el('stop',{offset:'100%','stop-color':'#356ae6'}));defs.append(front);
+   const side=el('linearGradient',{id:config.id+'-side',x1:'0',x2:'1',y1:'0',y2:'1'});side.append(el('stop',{offset:'0%','stop-color':'#244eb5'}));side.append(el('stop',{offset:'100%','stop-color':'#172f70'}));defs.append(side);
+   const topGrad=el('linearGradient',{id:config.id+'-top',x1:'0',x2:'1',y1:'0',y2:'1'});topGrad.append(el('stop',{offset:'0%','stop-color':'#b8d1ff'}));topGrad.append(el('stop',{offset:'100%','stop-color':'#6b95ed'}));defs.append(topGrad);svg.append(defs);
+   for(let i=0;i<=steps;i++){const y=top+plotH*i/steps,val=max*(1-i/steps);svg.append(el('line',{x1:left,y1:y,x2:W-right,y2:y,stroke:'#dce5f3','stroke-width':'1','stroke-dasharray':i===steps?'0':'4 7'}));svg.append(el('text',{x:left-14,y:y+5,'text-anchor':'end',fill:'#718096','font-size':'12'},fmt(val)));}
+   const slot=plotW/clean.length,barW=Math.max(4,Math.min(24,slot*.58)),depth=Math.min(9,barW*.35);
+   clean.forEach((item,i)=>{
+     const x=left+i*slot+(slot-barW)/2,barH=Math.max(item.value>0?2:0,item.value/max*plotH),y=top+plotH-barH;
+     const g=el('g',{class:'usage-column',tabindex:'0',role:'img','aria-label':item.date+': '+fmt(item.value)+' '+config.unit});
+     g.append(el('title',{},item.date+' · '+fmt(item.value)+' '+config.unit));
+     if(barH>0){
+       g.append(el('polygon',{points:x+','+y+' '+(x+depth)+','+(y-depth)+' '+(x+barW+depth)+','+(y-depth)+' '+(x+barW)+','+y,fill:'url(#'+config.id+'-top)'}));
+       g.append(el('polygon',{points:(x+barW)+','+y+' '+(x+barW+depth)+','+(y-depth)+' '+(x+barW+depth)+','+(top+plotH-depth)+' '+(x+barW)+','+(top+plotH),fill:'url(#'+config.id+'-side)'}));
+       g.append(el('rect',{x:x,y:y,width:barW,height:barH,rx:Math.min(4,barW/4),fill:'url(#'+config.id+'-front)'}));
+     }
+     g.append(el('rect',{x:x-slot*.15,y:top,width:slot*.85,height:plotH+12,fill:'transparent'}));svg.append(g);
+   });
+   const labelCount=Math.min(6,clean.length),seen=new Set();
+   for(let i=0;i<labelCount;i++){const idx=Math.round(i*(clean.length-1)/Math.max(1,labelCount-1));if(seen.has(idx))continue;seen.add(idx);const x=left+idx*slot+slot/2;svg.append(el('text',{x:x,y:H-25,'text-anchor':'middle',fill:'#718096','font-size':'12'},clean[idx].date.slice(5)));}
+   svg.append(el('text',{x:left,y:14,fill:'#718096','font-size':'11','font-weight':'700'},config.unit.toUpperCase()));
+ }
+ configs.forEach(config=>{
+   const card=document.getElementById(config.id).closest('.analytics-card');
+   fetch('/api/daily/'+config.resource).then(r=>{if(!r.ok)throw new Error('Request failed');return r.json();}).then(rows=>{
+     draw(config,rows,60);
+     card.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>{
+       card.querySelectorAll('[data-range]').forEach(b=>b.classList.toggle('selected',b===button));draw(config,rows,Number(button.dataset.range));
+     }));
+   }).catch(()=>{document.getElementById(config.id+'-caption').textContent='Unable to load usage data';document.getElementById(config.id+'-empty').hidden=false;});
+ });
+})();
 </script>'''
-    body=_top('Insights','Analytics','Explore daily usage and compare your resources.')+'<div class="grid two">'+chart.format(name='Electricity',id='electricity-chart')+chart.format(name='Water',id='water-chart')+'</div>'+script
+    body=_top('Insights','Analytics','Explore your household usage through detailed, interactive resource charts.')+'<div class="analytics-stack">'+chart.format(name='Electricity',id='electricity-chart',unit='kWh')+chart.format(name='Water',id='water-chart',unit='m³')+'</div>'+script
     return page('Analytics',body,version,'/analytics')
+
 def forecast_page(fcs,currency,version,message=None):
     if message:
         content=f'<div class="card"><div class="empty"><h2>Forecast needs more history</h2><p>{esc(message)}</p><a class="btn primary" href="/records/new">＋ Add a reading</a></div></div>'
