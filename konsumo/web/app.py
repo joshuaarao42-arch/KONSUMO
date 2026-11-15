@@ -253,7 +253,7 @@ def api_chat(p, q, form, db, user_id):
         + json.dumps(summary, ensure_ascii=False)
     )
     payload = {
-        "model": os.environ.get("AI_GATEWAY_MODEL", "openai/gpt-5.4"),
+        "model": os.environ.get("AI_GATEWAY_MODEL", "openai/gpt-5.4-mini"),
         "messages": [{"role": "system", "content": system_prompt}] + messages,
         "max_tokens": 600,
         "temperature": 0.4,
