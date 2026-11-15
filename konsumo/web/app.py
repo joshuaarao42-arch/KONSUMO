@@ -10,12 +10,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from .. import __version__
-from ..analytics import (daily_series, detect_anomalies, monthly_summary,
-                         month_over_month, tiered_cost, usage_stats)
 from ..config import CURRENCY
 from ..database import init_db
-from ..forecasting import forecast_all, forecast_daily
-from ..recommendations import generate_recommendations
 from ..repository import (LookupError, ValidationError, add_record, delete_record,
                           get_record, list_records, update_record)
 from ..seed import seed as seed_db
@@ -41,6 +37,8 @@ def json_response(obj, status=200):
 # ---------------------------------------------------------------- pages
 
 def page_dashboard(p, q, form, db, user_id):
+    from ..analytics import usage_stats, month_over_month, detect_anomalies
+    from ..forecasting import forecast_all
     cards = [{"resource": r, "stats": usage_stats(r, db_path=db, user_id=user_id),
               "mom": month_over_month(r, db_path=db, user_id=user_id)} for r in RESOURCES]
     try:
@@ -132,6 +130,7 @@ def page_anomalies(p, q, form, db, user_id):
 
 
 def page_recommendations(p, q, form, db, user_id):
+    from ..recommendations import generate_recommendations
     tips = generate_recommendations(db_path=db, user_id=user_id)
     return Response(views.recommendations_page(tips, CURRENCY, __version__))
 
@@ -139,6 +138,7 @@ def page_recommendations(p, q, form, db, user_id):
 # ---------------------------------------------------------------- JSON API
 
 def api_daily(p, q, form, db, user_id):
+    from ..analytics import daily_series
     s = daily_series(p[0], db_path=db, user_id=user_id)
     start = (q.get("start") or [None])[0]
     if start:
@@ -148,6 +148,7 @@ def api_daily(p, q, form, db, user_id):
 
 
 def api_monthly(p, q, form, db, user_id):
+    from ..analytics import monthly_summary
     m = monthly_summary(p[0], months=14, db_path=db, user_id=user_id)
     return json_response([{"month": i.strftime("%Y-%m"),
                            "usage": round(float(r["usage"]), 2),
@@ -156,6 +157,8 @@ def api_monthly(p, q, form, db, user_id):
 
 
 def api_forecast(p, q, form, db, user_id):
+    from ..analytics import daily_series
+    from ..forecasting import forecast_daily
     try:
         fc, metrics = forecast_daily(p[0], db_path=db, user_id=user_id)
     except ValueError as exc:
@@ -171,10 +174,12 @@ def api_forecast(p, q, form, db, user_id):
 
 
 def api_stats(p, q, form, db, user_id):
+    from ..analytics import usage_stats
     return json_response(usage_stats(p[0], db_path=db, user_id=user_id))
 
 
 def api_quote(p, q, form, db, user_id):
+    from ..analytics import tiered_cost
     body = form.get("_json") or {}
     try:
         amount = float(body.get("amount"))
