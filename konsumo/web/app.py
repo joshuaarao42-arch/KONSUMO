@@ -128,6 +128,7 @@ def page_forecast(p, q, form, db, user_id):
 
 
 def page_anomalies(p, q, form, db, user_id):
+    from ..analytics import detect_anomalies
     data = {r: detect_anomalies(r, db_path=db, user_id=user_id) for r in RESOURCES}
     return Response(views.anomalies_page(data, CURRENCY, __version__))
 
