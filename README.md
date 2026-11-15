@@ -7,7 +7,7 @@
   <br />
   Track electricity and water usage, understand household consumption patterns, and make more informed decisions about utility costs.
   <br /><br />
-  <a href="https://konsumo-2.onrender.com"><strong>🌐 Live Demo</strong></a>
+  <a href="https://konsumo.vercel.app"><strong>🌐 Live Demo</strong></a>
   ·
   <a href="https://github.com/joshuaarao42-arch/KONSUMO/issues">Report a bug</a>
   ·
@@ -24,7 +24,7 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 
 | | |
 |---|---|
-| **Live application** | [https://konsumo-2.onrender.com](https://konsumo-2.onrender.com) |
+| **Live application** | [https://konsumo.vercel.app](https://konsumo.vercel.app) |
 | **Repository** | [joshuaarao42-arch/KONSUMO](https://github.com/joshuaarao42-arch/KONSUMO) |
 | **Language** | Python 3.10+ |
 | **Database** | SQLite |
@@ -279,41 +279,17 @@ KONSUMO/
 
 ## Deployment
 
-The live application is hosted on Render:
+The live application is deployed on [Vercel](https://vercel.com/):
 
-**[https://konsumo-2.onrender.com](https://konsumo-2.onrender.com)**
+**[https://konsumo.vercel.app](https://konsumo.vercel.app)**
 
-For a Render Web Service, use the following settings:
+The repository uses the Vercel Python Function entry point in `api/index.py`. The existing server-rendered dashboard, authentication pages, records, analytics, forecasting, recommendations, and JSON routes are served through that entry point.
 
-| Setting | Value |
-|---|---|
-| Runtime | Python |
-| Build command | `pip install -r requirements.txt` |
-| Start command | `python run.py` |
+Production uses PostgreSQL through the `DATABASE_URL` environment variable. The database is hosted on [Neon](https://neon.tech/) and uses a pooled connection string for serverless requests. Keep database credentials private and never commit them to Git. SQLite remains available for local development.
 
-Render supplies the `PORT` environment variable, which `run.py` reads automatically.
+**Existing data:** Vercel does not automatically import data from an older Render SQLite database. Any accounts or records that need to be retained must be exported and migrated separately.
 
-### Important: database persistence
-
-The default SQLite database is stored beside the application code for local development. On Render, attach a persistent disk to the web service (for example, mount it at `/var/data`) and set the environment variable `KONSUMO_DB_PATH=/var/data/konsumo.sqlite3`. Redeploy after saving the setting. The application creates the database directory if needed and copies the previous local `konsumo.sqlite3` file to the persistent path on first startup when that file is still available. Back up your existing database before changing the mount or redeploying; a file already lost from Render's temporary filesystem cannot be recovered by the application. Without a persistent disk, accounts, sessions, and consumption records can be lost when the service is restarted or redeployed.
-
-The application supports multiple accounts. Every consumption record is linked to its owner, and all dashboard pages, analytics, forecasts, recommendations, and JSON endpoints filter by the authenticated account. Existing records in an upgraded database are assigned to the first account created after the upgrade.
-
-### Vercel deployment
-
-The repository includes a Vercel Python Function entry point in `api/index.py`. The existing server-rendered dashboard and its login, signup, records, analytics, forecasting, recommendations, and JSON routes are served through that entry point. SQLite remains available for local development; production must use PostgreSQL because Vercel Function instances do not provide durable local disk storage.
-
-1. Create a PostgreSQL database with a provider such as [Neon](https://neon.tech/). Use its pooled connection string for serverless requests.
-2. Import this repository into [Vercel](https://vercel.com/new) and select the project root as the Root Directory.
-3. In **Project Settings → Environment Variables**, add `DATABASE_URL` with the PostgreSQL connection string. Add it to Production, Preview, and Development as needed. Keep the value private; never commit it to Git.
-4. Deploy the `vercel-deployment` branch as a Preview first.
-5. Open `/api/health` on the Preview deployment. It should return `{"status":"ok","database":"connected"}`.
-6. Test signup, login, creating/editing/deleting records, analytics, logout, and a second account to confirm that records stay isolated.
-7. Only after the Preview works should you merge the pull request and promote the deployment to Production.
-
-**Existing data:** Vercel does not automatically import the old Render SQLite database. Before switching users to the Vercel deployment, export and migrate any records and accounts you need to keep. Do not point the new app at an empty production database and assume old Render records will appear.
-
-For local development, leave `DATABASE_URL` unset to continue using the local SQLite database. To test PostgreSQL locally, set `DATABASE_URL` to a development database connection string before running `python run.py`.
+For local development, leave `DATABASE_URL` unset to use the local SQLite database. To test PostgreSQL locally, set `DATABASE_URL` to a development database connection string before running `python run.py`.
 
 ## Development and Contribution
 
