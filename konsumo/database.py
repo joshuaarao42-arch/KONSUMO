@@ -1,5 +1,5 @@
 """SQLite for local development; PostgreSQL for serverless deployments."""
-import os, shutil, sqlite3
+import os, shutil, sqlite3, threading
 
 SQLITE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
@@ -40,7 +40,7 @@ def connect(db_path=None):
     c.execute("PRAGMA foreign_keys=ON")
     c.execute("PRAGMA busy_timeout=30000")
     return c
-def init_db(db_path=None):
+def _init_db_uncached(db_path=None):
     if _pg_url(db_path):
         with connect(db_path) as c:
             # Serialize cold-start schema setup across concurrent Vercel functions.
@@ -68,3 +68,28 @@ def init_db(db_path=None):
             first = c.execute("SELECT id FROM users ORDER BY id LIMIT 1").fetchone()
             if first: c.execute("UPDATE consumption SET user_id=? WHERE user_id IS NULL", (first["id"],))
         c.execute("CREATE INDEX IF NOT EXISTS idx_consumption_user_resource_date ON consumption(user_id, resource, recorded_at)")
+
+
+# Schema setup is needed once per database per warm serverless process, not on
+# every HTTP request. Keep the lock process-local; PostgreSQL's advisory lock
+# above still protects concurrent cold starts across separate instances.
+_INIT_LOCK = threading.Lock()
+_INITIALIZED_DATABASES = set()
+
+def init_db(db_path=None):
+    url = _pg_url(db_path)
+    if url:
+        key = "postgres:" + url
+    else:
+        path = db_path or os.environ.get("KONSUMO_DB_PATH")
+        if not path:
+            from .config import DEFAULT_DB_PATH
+            path = DEFAULT_DB_PATH
+        key = "sqlite:" + os.path.abspath(path)
+    if key in _INITIALIZED_DATABASES:
+        return
+    with _INIT_LOCK:
+        if key in _INITIALIZED_DATABASES:
+            return
+        _init_db_uncached(db_path)
+        _INITIALIZED_DATABASES.add(key)
