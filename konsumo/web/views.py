@@ -98,3 +98,46 @@ def auth_page(mode, error=None, values=None):
 <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="{autocomplete}" minlength="8" maxlength="128" placeholder="{placeholder}" required>{password_hint}</div>
 <button class="submit" type="submit">{button}</button></form><p class="switch">{alternate}</p>
 </section></main></body></html>'''
+
+
+# Floating AI assistant shared by authenticated dashboard pages.
+CHAT_STYLE = r"""
+.chat-launch{position:fixed;right:24px;bottom:24px;z-index:50;border:0;border-radius:999px;background:#356ae6;color:#fff;padding:14px 19px;font:700 14px system-ui;box-shadow:0 8px 28px #17203330;cursor:pointer}
+.chat-panel{display:none;position:fixed;right:24px;bottom:84px;z-index:51;width:min(390px,calc(100vw - 32px));height:min(560px,calc(100vh - 120px));background:#fff;border:1px solid #e5eaf2;border-radius:18px;box-shadow:0 18px 60px #17203330;overflow:hidden;flex-direction:column}
+.chat-panel.open{display:flex}.chat-head{padding:16px 18px;background:#101a2e;color:#fff;display:flex;justify-content:space-between;align-items:center}.chat-head small{display:block;color:#b9c6db;font-size:12px}.chat-close{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer}
+.chat-messages{padding:15px;overflow:auto;flex:1;background:#f7f9fc;display:flex;flex-direction:column;gap:10px}.chat-msg{max-width:88%;padding:10px 12px;border-radius:13px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.chat-msg.bot{background:#fff;border:1px solid #e5eaf2;align-self:flex-start}.chat-msg.user{background:#356ae6;color:#fff;align-self:flex-end}.chat-compose{display:flex;gap:8px;padding:12px;border-top:1px solid #e5eaf2}.chat-compose input{min-width:0;flex:1;border:1px solid #dbe2ed;border-radius:10px;padding:11px;font:14px system-ui}.chat-compose button{border:0;border-radius:10px;background:#356ae6;color:#fff;padding:0 15px;font-weight:700;cursor:pointer}.chat-compose button:disabled{opacity:.55;cursor:wait}
+"""
+CHAT_WIDGET = r"""
+<button class="chat-launch" id="konsumo-chat-open" type="button">✦ Ask Konsumo AI</button>
+<section class="chat-panel" id="konsumo-chat" aria-label="Konsumo AI assistant">
+  <header class="chat-head"><div><strong>Konsumo AI</strong><small>Your household usage assistant</small></div><button class="chat-close" id="konsumo-chat-close" type="button" aria-label="Close">×</button></header>
+  <div class="chat-messages" id="konsumo-chat-messages"><div class="chat-msg bot">Hi! Ask me about your electricity and water usage, or how to save on household utilities.</div></div>
+  <form class="chat-compose" id="konsumo-chat-form"><input id="konsumo-chat-input" maxlength="2000" placeholder="Ask about your usage…" autocomplete="off" required><button id="konsumo-chat-send" type="submit">Send</button></form>
+</section>
+"""
+CHAT_SCRIPT = r"""
+<script>
+(function(){
+ const panel=document.getElementById('konsumo-chat'),open=document.getElementById('konsumo-chat-open');
+ const close=document.getElementById('konsumo-chat-close'),form=document.getElementById('konsumo-chat-form');
+ const input=document.getElementById('konsumo-chat-input'),messagesEl=document.getElementById('konsumo-chat-messages');
+ const send=document.getElementById('konsumo-chat-send'),history=[];
+ if(!panel||!open||!form)return;
+ function add(text,role){const node=document.createElement('div');node.className='chat-msg '+role;node.textContent=text;messagesEl.appendChild(node);messagesEl.scrollTop=messagesEl.scrollHeight;}
+ open.addEventListener('click',()=>{panel.classList.add('open');input.focus();});
+ close.addEventListener('click',()=>panel.classList.remove('open'));
+ form.addEventListener('submit',async function(event){
+   event.preventDefault();const text=input.value.trim();if(!text||send.disabled)return;
+   history.push({role:'user',content:text});add(text,'user');input.value='';send.disabled=true;send.textContent='…';
+   const pending=document.createElement('div');pending.className='chat-msg bot';pending.textContent='Thinking…';messagesEl.appendChild(pending);
+   try{
+     const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+     const data=await response.json();pending.remove();
+     if(!response.ok)throw new Error(data.error||'Konsumo AI could not respond. Please try again.');
+     const answer=data.answer||'I could not generate a response.';history.push({role:'assistant',content:answer});add(answer,'bot');
+   }catch(error){pending.remove();history.pop();add(error.message||'Connection problem. Please try again.','bot');}
+   finally{send.disabled=false;send.textContent='Send';input.focus();}
+ });
+})();
+</script>
+"""
