@@ -21,8 +21,15 @@ def dispatch(subpath):
     query={k:v for k,v in request.args.to_dict(flat=False).items() if k != "__path"}
     form=request.form.to_dict()
     if request.is_json: form["_json"]=request.get_json(silent=True) or {}
+    # Static browser icon requests do not need authentication or a database connection.
+    if path in ("/favicon.ico", "/favicon.png"):
+        return make_response("", 204)
+
     try:
-        init_db(DB)
+        # Login and signup GETs only render HTML; defer the database connection
+        # until a form is submitted or a protected page needs session lookup.
+        if not (method == "GET" and path in ("/login", "/signup")):
+            init_db(DB)
         token=request.cookies.get("konsumo_session","")
         secure=bool(os.environ.get("VERCEL")) or request.is_secure
         if path in ("/login","/signup"):
