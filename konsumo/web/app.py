@@ -261,7 +261,7 @@ def api_chat(p, q, form, db, user_id):
         "generationConfig": {"maxOutputTokens": 600, "temperature": 0.4},
     }
     request = urllib.request.Request(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
         data=json.dumps(payload).encode("utf-8"),
         headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
         method="POST",
@@ -274,9 +274,19 @@ def api_chat(p, q, form, db, user_id):
         if not answer.strip():
             raise ValueError("Empty AI response")
         return json_response({"answer": answer.strip()})
-    except urllib.error.HTTPError:
-        # Avoid returning provider response bodies, which may contain sensitive diagnostics.
-        return json_response({"error": "Gemini could not complete that request. Check the API key and free-tier quota in Google AI Studio."}, 502)
+    except urllib.error.HTTPError as exc:
+        # The Gemini 2.5 family is restricted for some newly created projects.
+        # Return Google's safe error message so key, model-access and quota failures
+        # can be distinguished without ever exposing the API key.
+        try:
+            provider_error = json.loads(exc.read().decode("utf-8"))
+            detail = provider_error.get("error", {}).get("message", "")
+        except (ValueError, UnicodeDecodeError, AttributeError):
+            detail = ""
+        detail = str(detail).replace(api_key, "[redacted]")[:500]
+        if not detail:
+            detail = "Gemini request failed. Check the model access and free-tier quota in Google AI Studio."
+        return json_response({"error": f"Gemini API error ({exc.code}): {detail}"}, 502)
     except (urllib.error.URLError, TimeoutError, KeyError, IndexError, ValueError, json.JSONDecodeError):
         return json_response({"error": "Konsumo AI is temporarily unavailable. Please try again."}, 502)
 
