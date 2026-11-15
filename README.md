@@ -62,6 +62,12 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 ### Recommendations
 - Generate household-saving suggestions using available consumption patterns.
 
+### Konsumo AI assistant
+- Open the floating AI assistant from any authenticated dashboard page.
+- Ask questions about recent electricity and water readings, recorded costs, and practical ways to save.
+- The assistant receives only the signed-in account's latest utility records; it cannot access another account's data.
+- AI responses use Google's Gemini 2.5 Flash-Lite free tier. Configure `GEMINI_API_KEY` in Vercel before using the assistant. No Vercel AI Gateway account or paid model configuration is required.
+
 ### Account access
 - Create an account through the signup page and sign in through the login page. Multiple accounts are supported.
 - Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes rather than plain text.
