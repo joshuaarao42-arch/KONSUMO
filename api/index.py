@@ -13,8 +13,13 @@ DB=os.environ.get("DATABASE_URL") or DEFAULT_DB_PATH
 @app.route("/",defaults={"subpath":""},methods=["GET","POST"])
 @app.route("/<path:subpath>",methods=["GET","POST"])
 def dispatch(subpath):
-    path="/"+subpath if subpath else "/"; method=request.method
-    query=request.args.to_dict(flat=False); form=request.form.to_dict()
+    # Vercel rewrites requests to /api/index; recover the original URL path.
+    path=request.args.get("__path") or ("/"+subpath if subpath else "/")
+    if not path.startswith("/"):
+        path="/"+path
+    method=request.method
+    query={k:v for k,v in request.args.to_dict(flat=False).items() if k != "__path"}
+    form=request.form.to_dict()
     if request.is_json: form["_json"]=request.get_json(silent=True) or {}
     try:
         init_db(DB)
