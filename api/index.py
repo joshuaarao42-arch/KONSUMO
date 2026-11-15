@@ -42,7 +42,10 @@ def dispatch(subpath):
         return response
     except Exception:
         app.logger.exception("Konsumo request failed")
-        return make_response(views.error_page("Konsumo could not complete this request. Please try again.","Vercel"),500)
+        return make_response(
+            "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Konsumo error</title></head><body style='font-family:system-ui;max-width:560px;margin:12vh auto;padding:24px;color:#172033'><h1>Something went wrong</h1><p>Konsumo could not complete this request. Please try again in a moment.</p><p><a href='/login'>Return to login</a></p></body></html>",
+            500,
+        )
 
 @app.get("/api/health")
 def health():
