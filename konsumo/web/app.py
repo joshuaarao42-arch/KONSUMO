@@ -120,6 +120,7 @@ def page_analytics(p, q, form, db, user_id):
 
 
 def page_forecast(p, q, form, db, user_id):
+    from ..forecasting import forecast_all
     try:
         fcs = forecast_all(db_path=db, user_id=user_id)
     except ValueError as exc:
