@@ -299,6 +299,22 @@ The default SQLite database is stored beside the application code for local deve
 
 The application supports multiple accounts. Every consumption record is linked to its owner, and all dashboard pages, analytics, forecasts, recommendations, and JSON endpoints filter by the authenticated account. Existing records in an upgraded database are assigned to the first account created after the upgrade.
 
+### Vercel deployment
+
+The repository includes a Vercel Python Function entry point in `api/index.py`. The existing server-rendered dashboard and its login, signup, records, analytics, forecasting, recommendations, and JSON routes are served through that entry point. SQLite remains available for local development; production must use PostgreSQL because Vercel Function instances do not provide durable local disk storage.
+
+1. Create a PostgreSQL database with a provider such as [Neon](https://neon.tech/). Use its pooled connection string for serverless requests.
+2. Import this repository into [Vercel](https://vercel.com/new) and select the project root as the Root Directory.
+3. In **Project Settings → Environment Variables**, add `DATABASE_URL` with the PostgreSQL connection string. Add it to Production, Preview, and Development as needed. Keep the value private; never commit it to Git.
+4. Deploy the `vercel-deployment` branch as a Preview first.
+5. Open `/api/health` on the Preview deployment. It should return `{"status":"ok","database":"connected"}`.
+6. Test signup, login, creating/editing/deleting records, analytics, logout, and a second account to confirm that records stay isolated.
+7. Only after the Preview works should you merge the pull request and promote the deployment to Production.
+
+**Existing data:** Vercel does not automatically import the old Render SQLite database. Before switching users to the Vercel deployment, export and migrate any records and accounts you need to keep. Do not point the new app at an empty production database and assume old Render records will appear.
+
+For local development, leave `DATABASE_URL` unset to continue using the local SQLite database. To test PostgreSQL locally, set `DATABASE_URL` to a development database connection string before running `python run.py`.
+
 ## Development and Contribution
 
 Contributions, bug reports, and improvement suggestions are welcome. Before submitting a change:
