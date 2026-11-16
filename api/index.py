@@ -1,7 +1,7 @@
 """Vercel-compatible Flask entry point for Konsumo."""
 import os, hashlib, time
 from urllib.parse import urlsplit
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 from konsumo.config import DEFAULT_DB_PATH
 from konsumo.database import init_db
 from konsumo.web import views
@@ -84,6 +84,13 @@ def dispatch(subpath):
     # Static browser icon requests do not need authentication or a database connection.
     if path in ("/favicon.ico", "/favicon.png"):
         return make_response("", 204)
+    if path == "/api/health" and method == "GET":
+        try:
+            init_db(DB)
+            return jsonify({"status": "ok", "database": "connected"})
+        except Exception:
+            app.logger.exception("Database health check failed")
+            return jsonify({"status": "error", "database": "unavailable"}), 503
 
     try:
         # Login and signup GETs only render HTML; defer the database connection
