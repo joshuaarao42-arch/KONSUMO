@@ -200,7 +200,11 @@ def api_quote(p, q, form, db, user_id):
 
 
 def api_seed(p, q, form, db, user_id):
-    created = seed_db(db_path=db, days=int(form.get("days", 425)), verbose=False, user_id=user_id)
+    try:
+        days = max(1, min(int(form.get("days", 425)), 425))
+    except (TypeError, ValueError):
+        return json_response({"error": "days must be a number between 1 and 425"}, 400)
+    created = seed_db(db_path=db, days=days, verbose=False, user_id=user_id)
     return json_response({"created": created})
 
 
