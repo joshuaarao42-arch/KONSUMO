@@ -367,9 +367,10 @@ def make_handler(db):
                     elif method == "POST":
                         try:
                             if path == "/signup":
-                                user = create_user(form.get("name", ""), form.get("email", ""), form.get("password", ""), db)
+                                if form.get("password", "") != form.get("confirm_password", ""): raise AuthError("Your passwords do not match.")
+                                user = create_user(form.get("name", ""), form.get("username", ""), form.get("password", ""), db)
                             else:
-                                user = authenticate(form.get("email", ""), form.get("password", ""), db)
+                                user = authenticate(form.get("username", ""), form.get("password", ""), db)
                             session_token = create_session(user["id"], db)
                             resp = Response(status=303, redirect_to="/",
                                 headers={"Set-Cookie": f"konsumo_session={session_token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600{secure}"})
