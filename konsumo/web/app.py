@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .. import __version__
 from ..config import CURRENCY
-from ..database import init_db
+from ..database import connect, init_db
 from ..repository import (LookupError, ValidationError, add_record, delete_record,
                           get_record, list_records, update_record)
 from ..seed import seed as seed_db
@@ -49,7 +49,10 @@ def page_dashboard(p, q, form, db, user_id):
     except ValueError:
         forecasts = {}
     anom = sum(len(detect_anomalies(r, db_path=db, user_id=user_id)) for r in RESOURCES)
-    return Response(views.dashboard_page(cards, forecasts, anom, CURRENCY, __version__))
+    with connect(db) as conn:
+        account = conn.execute("SELECT username FROM users WHERE id=?", (user_id,)).fetchone()
+    username = account["username"] if account else ""
+    return Response(views.dashboard_page(cards, forecasts, anom, CURRENCY, __version__, username))
 
 
 def page_records(p, q, form, db, user_id):
