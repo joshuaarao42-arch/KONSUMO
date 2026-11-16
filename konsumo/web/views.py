@@ -190,7 +190,7 @@ CHAT_SCRIPT = r"""
    history.push({role:'user',content:text});add(text,'user');input.value='';send.disabled=true;send.textContent='…';
    const pending=document.createElement('div');pending.className='chat-msg bot';pending.textContent='Thinking…';messagesEl.appendChild(pending);messagesEl.scrollTop=messagesEl.scrollHeight;
    try{
-     const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history})});
+     const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-KONSUMO-Request':'1'},body:JSON.stringify({messages:history})});
      const data=await response.json();pending.remove();
      if(!response.ok)throw new Error(data.error||'Konsumo AI could not respond. Please try again.');
      const answer=data.answer||'I could not generate a response.';history.push({role:'assistant',content:answer});add(answer,'bot');
