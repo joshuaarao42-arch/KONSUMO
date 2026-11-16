@@ -2,16 +2,17 @@
 import os, shutil, sqlite3, threading
 
 SQLITE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, username TEXT, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 CREATE TABLE IF NOT EXISTS consumption (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, resource TEXT NOT NULL CHECK(resource IN ('electricity','water')), recorded_at TEXT NOT NULL, amount REAL NOT NULL CHECK(amount > 0), cost REAL, notes TEXT NOT NULL DEFAULT '');
 """
 PG_SCHEMA = (
-"CREATE TABLE IF NOT EXISTS users (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+"CREATE TABLE IF NOT EXISTS users (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, username TEXT, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
 "CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TEXT NOT NULL)",
 "CREATE TABLE IF NOT EXISTS consumption (id BIGSERIAL PRIMARY KEY, user_id BIGINT REFERENCES users(id) ON DELETE CASCADE, resource TEXT NOT NULL CHECK(resource IN ('electricity','water')), recorded_at TEXT NOT NULL, amount DOUBLE PRECISION NOT NULL CHECK(amount > 0), cost DOUBLE PRECISION, notes TEXT NOT NULL DEFAULT '')",
 "CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at)",
+"CREATE TABLE IF NOT EXISTS konsumo_rate_limits (scope TEXT NOT NULL, identity_hash TEXT NOT NULL, window_start BIGINT NOT NULL, hit_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope, identity_hash, window_start))",
 "CREATE INDEX IF NOT EXISTS idx_consumption_user_resource_date ON consumption(user_id, resource, recorded_at)",
 )
 def _pg_url(path=None):
@@ -48,6 +49,11 @@ def _init_db_uncached(db_path=None):
             # EXISTS statements can race while PostgreSQL creates the table's row type.
             c.execute("SELECT pg_advisory_xact_lock(hashtext('konsumo_schema_init'))")
             for sql in PG_SCHEMA: c.execute(sql)
+            c.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT")
+            c.execute("UPDATE users SET username = 'user' || id::text WHERE username IS NULL OR username = ''")
+            c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+            c.execute("ALTER TABLE users ALTER COLUMN username SET NOT NULL")
+            c.execute("CREATE TABLE IF NOT EXISTS konsumo_rate_limits (scope TEXT NOT NULL, identity_hash TEXT NOT NULL, window_start BIGINT NOT NULL, hit_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope, identity_hash, window_start))")
             c.execute("ALTER TABLE consumption ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE CASCADE")
             first = c.execute("SELECT id FROM users ORDER BY id LIMIT 1").fetchone()
             if first: c.execute("UPDATE consumption SET user_id=? WHERE user_id IS NULL", (first["id"],))
@@ -62,6 +68,15 @@ def _init_db_uncached(db_path=None):
         shutil.copy2(legacy, target)
     with connect(target) as c:
         c.executescript(SQLITE_SCHEMA)
+        user_cols = {r["name"] for r in c.execute("PRAGMA table_info(users)")}
+        if "username" not in user_cols:
+            c.execute("ALTER TABLE users ADD COLUMN username TEXT")
+        import re
+        for legacy in c.execute("SELECT id,email FROM users WHERE username IS NULL OR username = ''").fetchall():
+            base = re.sub(r"[^a-z0-9_]", "", (legacy["email"] or "").split("@")[0].lower())[:14] or "user"
+            c.execute("UPDATE users SET username=? WHERE id=?", (base + str(legacy["id"]), legacy["id"]))
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+        c.execute("CREATE TABLE IF NOT EXISTS konsumo_rate_limits (scope TEXT NOT NULL, identity_hash TEXT NOT NULL, window_start INTEGER NOT NULL, hit_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope, identity_hash, window_start))")
         cols = {r["name"] for r in c.execute("PRAGMA table_info(consumption)")}
         if "user_id" not in cols:
             c.execute("ALTER TABLE consumption ADD COLUMN user_id INTEGER REFERENCES users(id)")
