@@ -49,8 +49,8 @@ def create_user(name, username, password, db_path=None):
     try:
         with connect(db_path) as c:
             uid = c.execute(
-                "INSERT INTO users(name,email,username,password_salt,password_hash) VALUES (?,?,?,?,?) RETURNING id",
-                (name, legacy_email, username, salt, digest),
+                "INSERT INTO users(name,email,username,password_salt,password_hash,password_iterations) VALUES (?,?,?,?,?,?) RETURNING id",
+                (name, legacy_email, username, salt, digest, ITERATIONS),
             ).fetchone()["id"]
             c.execute("UPDATE consumption SET user_id=? WHERE user_id IS NULL", (uid,))
             return {"id": uid, "name": name, "username": username}
