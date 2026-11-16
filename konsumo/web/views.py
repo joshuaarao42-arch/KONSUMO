@@ -110,29 +110,34 @@ def auth_page(mode, error=None, values=None):
     values = values or {}
     signup = mode == "signup"
     heading = "Create your account" if signup else "Welcome back"
-    subtitle = "Start making sense of your household utility use." if signup else "Sign in to continue to your household dashboard."
+    subtitle = "Understand your household usage, one reading at a time." if signup else "Sign in to your household dashboard."
     name_field = f'<div class="field"><label for="name">Full name</label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" value="{esc(values.get("name", ""))}" required></div>' if signup else ""
     action = "/signup" if signup else "/login"
     alternate = 'Already have an account? <a href="/login">Log in</a>' if signup else 'New to Konsumo? <a href="/signup">Create an account</a>'
     error_html = f'<div class="auth-error" role="alert">{esc(error)}</div>' if error else ""
-    password_hint = '<span class="hint">Use at least 8 characters.</span>' if signup else ""
-    autocomplete = "new-password" if signup else "current-password"
-    placeholder = "At least 8 characters" if signup else "Enter your password"
+    password_hint = '<span class="hint">12+ characters; use at least three character types.</span>' if signup else ""
+    username_placeholder = "Choose a username" if signup else "Your username"
     button = "Create account" if signup else "Log in"
+    confirm_field = '<div class="field"><label for="confirm_password">Confirm password</label><input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="Enter your password again" required></div>' if signup else ""
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{heading} · Konsumo</title><style>
-*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;background:#f4f7fb;color:#172033;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}}
-.auth-wrap{{width:min(100%,440px)}}.auth-brand{{display:flex;align-items:center;justify-content:center;gap:10px;font-size:25px;font-weight:850;margin-bottom:24px}}.auth-logo{{width:42px;height:48px;border-radius:9px;background:#101a2e;display:grid;place-items:center;padding:3px;flex:none}}.auth-logo svg{{display:block;width:100%;height:100%}}
-.auth-card{{background:#fff;border:1px solid #e5eaf2;border-radius:20px;padding:34px;box-shadow:0 20px 60px #1f304f12}}h1{{font-size:27px;letter-spacing:-.7px;margin:0 0 5px}}.sub{{color:#718096;margin:0 0 25px}}.field{{display:flex;flex-direction:column;gap:7px;margin:15px 0}}label{{font-weight:700;font-size:13px}}input{{width:100%;border:1px solid #dbe2ed;border-radius:10px;padding:12px 13px;font:inherit;outline:none}}input:focus{{border-color:#356ae6;box-shadow:0 0 0 3px #356ae61a}}.submit{{width:100%;border:0;border-radius:10px;background:#356ae6;color:white;padding:13px;font:700 15px system-ui;cursor:pointer;margin-top:10px}}.submit:hover{{background:#2858c9}}.switch{{text-align:center;color:#718096;margin:22px 0 0;font-size:14px}}a{{color:#356ae6;font-weight:700;text-decoration:none}}.auth-error{{background:#fff0f0;border:1px solid #ffd3d3;color:#b42318;padding:11px 13px;border-radius:9px;margin-bottom:16px;font-size:14px}}.hint{{font-size:12px;color:#718096}}@media(max-width:480px){{.auth-card{{padding:25px 20px}}}}
+<meta name="theme-color" content="#101a2e"><title>{heading} · Konsumo</title><style>
+*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 10%,#1e3760 0,transparent 40%),#0b1425;color:#172033;font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px}}
+.auth-wrap{{width:min(100%,470px)}}.auth-brand{{display:flex;align-items:center;justify-content:center;gap:12px;color:#fff;font-size:27px;font-weight:850;letter-spacing:-.8px;margin-bottom:22px}}.auth-logo{{width:46px;height:50px;border-radius:13px;background:linear-gradient(145deg,#1c3557,#101a2e);border:1px solid #ffffff24;display:grid;place-items:center;padding:4px;flex:none}}.auth-logo svg{{display:block;width:100%;height:100%}}
+.auth-card{{background:#fff;border:1px solid #ffffff25;border-radius:22px;padding:36px;box-shadow:0 28px 90px #0006}}h1{{font-size:29px;letter-spacing:-.9px;margin:0 0 5px}}.sub{{color:#718096;margin:0 0 25px}}.field{{display:flex;flex-direction:column;gap:7px;margin:16px 0}}label{{font-weight:750;font-size:13px}}input{{width:100%;min-width:0;border:1px solid #dbe2ed;border-radius:11px;padding:13px 14px;font:inherit;outline:none;transition:border-color .18s,box-shadow .18s}}input:focus{{border-color:#356ae6;box-shadow:0 0 0 4px #356ae61a}}.submit{{width:100%;border:0;border-radius:11px;background:linear-gradient(110deg,#356ae6,#2858c9);color:white;padding:14px;font:750 15px system-ui;cursor:pointer;margin-top:10px;box-shadow:0 8px 18px #356ae633}}.submit:hover{{filter:brightness(1.06)}}.submit:focus-visible,a:focus-visible{{outline:3px solid #55d6be;outline-offset:3px}}.switch{{text-align:center;color:#718096;margin:23px 0 0;font-size:14px}}a{{color:#356ae6;font-weight:750;text-decoration:none}}.auth-error{{background:#fff0f0;border:1px solid #ffd3d3;color:#b42318;padding:11px 13px;border-radius:10px;margin-bottom:16px;font-size:14px}}.hint{{font-size:12px;color:#718096}}.auth-foot{{text-align:center;color:#a9b7cc;font-size:12px;margin-top:18px}}
+@media(max-width:520px){{body{{padding:16px}}.auth-card{{padding:26px 20px;border-radius:18px}}h1{{font-size:25px}}.auth-brand{{font-size:24px;margin-bottom:17px}}}}
 </style></head><body><main class="auth-wrap">
 <div class="auth-brand"><span class="auth-logo"><svg viewBox="0 0 42 57" role="img" aria-label="Konsumo logo"><path d="M21 2.5C16 9.5 3.5 23.5 3.5 34.5a17.5 17.5 0 0 0 35 0C38.5 23.5 26 9.5 21 2.5Z" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="m23.5 13-12 23h9l-2 12 12-25h-9l2-10Z" fill="#55d6be" stroke="#55d6be" stroke-linejoin="round"/></svg></span>Konsumo</div><section class="auth-card">
 <h1>{heading}</h1><p class="sub">{subtitle}</p>{error_html}
-<form method="post" action="{action}">{name_field}
-<div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" value="{esc(values.get("email", ""))}" required></div>
-<div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="{autocomplete}" minlength="8" maxlength="128" placeholder="{placeholder}" required>{password_hint}</div>
+<form method="post" action="{action}" id="auth-form">{name_field}
+<div class="field"><label for="username">Username</label><input id="username" name="username" type="text" autocomplete="username" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" placeholder="{username_placeholder}" value="{esc(values.get("username", ""))}" required></div>
+<div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="{'new-password' if signup else 'current-password'}" minlength="{'12' if signup else '1'}" maxlength="128" placeholder="{'At least 12 characters' if signup else 'Enter your password'}" required>{password_hint}</div>
+{confirm_field}
 <button class="submit" type="submit">{button}</button></form><p class="switch">{alternate}</p>
-</section></main></body></html>'''
+</section><div class="auth-foot">Private by design · Your household data stays yours</div></main>
+<script>
+(function(){const form=document.getElementById('auth-form');if(!form)return;form.addEventListener('submit',function(e){const p=form.querySelector('#password');const c=form.querySelector('#confirm_password');if(c&&p.value!==c.value){e.preventDefault();c.setCustomValidity('Passwords do not match.');c.reportValidity();}else if(c){c.setCustomValidity('');}});const c=form.querySelector('#confirm_password');if(c)c.addEventListener('input',()=>c.setCustomValidity(''));})();
+</script></body></html>'''
 
 
 # Floating AI assistant shared by authenticated dashboard pages.
