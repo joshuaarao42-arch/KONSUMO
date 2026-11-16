@@ -60,6 +60,8 @@ def create_user(name, username, password, db_path=None):
 
 
 def authenticate(username, password, db_path=None):
+    if len(password or "") > 128:
+        raise AuthError("Incorrect username or password.")
     init_db(db_path)
     username = (username or "").strip().lower()
     with connect(db_path) as c:
