@@ -51,7 +51,7 @@ def _init_db_uncached(db_path=None):
             for sql in PG_SCHEMA: c.execute(sql)
             c.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT")
             c.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_iterations INTEGER NOT NULL DEFAULT 310000")
-            c.execute("UPDATE users SET username = LOWER(REGEXP_REPLACE(SPLIT_PART(email, '@', 1), '[^a-zA-Z0-9_]', '', 'g')) || id::text WHERE username IS NULL OR username = ''")
+            c.execute("UPDATE users SET username = COALESCE(NULLIF(LEFT(LOWER(REGEXP_REPLACE(SPLIT_PART(email, '@', 1), '[^a-zA-Z0-9_]', '', 'g')), 14), ''), 'user') || id::text WHERE username IS NULL OR username = ''")
             c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
             c.execute("ALTER TABLE users ALTER COLUMN username SET NOT NULL")
             c.execute("CREATE TABLE IF NOT EXISTS konsumo_rate_limits (scope TEXT NOT NULL, identity_hash TEXT NOT NULL, window_start BIGINT NOT NULL, hit_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope, identity_hash, window_start))")
