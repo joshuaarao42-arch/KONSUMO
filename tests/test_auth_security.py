@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 
 import pytest
@@ -114,3 +115,28 @@ def test_vercel_signup_login_logout_and_security_headers(tmp_path, monkeypatch):
     assert logged_out.status_code == 303
     login = client.post("/login", data={"username": "web_user", "password": PASSWORD}, headers=origin)
     assert login.status_code == 303
+
+
+
+def test_legacy_password_hash_is_accepted_then_upgraded(tmp_path):
+    path = str(tmp_path / "legacy-password.sqlite3")
+    password = "LegacyPassword!42"
+    salt = bytes.fromhex("11" * 16)
+    old_hash = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 310000).hex()
+    conn = sqlite3.connect(path)
+    conn.execute("""CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_salt TEXT NOT NULL,
+        password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )""")
+    conn.execute("INSERT INTO users(name,email,password_salt,password_hash) VALUES (?,?,?,?)",
+                 ("Legacy", "legacy.person@example.com", salt.hex(), old_hash))
+    conn.commit()
+    conn.close()
+    init_db(path)
+    with connect(path) as conn:
+        username = conn.execute("SELECT username FROM users WHERE id=1").fetchone()["username"]
+    assert authenticate(username, password, path)["id"] == 1
+    with connect(path) as conn:
+        row = conn.execute("SELECT password_iterations FROM users WHERE id=1").fetchone()
+    assert row["password_iterations"] == 600000
