@@ -2,7 +2,7 @@
 import os, shutil, sqlite3, threading
 
 SQLITE_SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, username TEXT, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE COLLATE NOCASE, username TEXT, password_salt TEXT NOT NULL, password_hash TEXT NOT NULL, password_iterations INTEGER NOT NULL DEFAULT 310000, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 CREATE TABLE IF NOT EXISTS consumption (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, resource TEXT NOT NULL CHECK(resource IN ('electricity','water')), recorded_at TEXT NOT NULL, amount REAL NOT NULL CHECK(amount > 0), cost REAL, notes TEXT NOT NULL DEFAULT '');
@@ -50,7 +50,8 @@ def _init_db_uncached(db_path=None):
             c.execute("SELECT pg_advisory_xact_lock(hashtext('konsumo_schema_init'))")
             for sql in PG_SCHEMA: c.execute(sql)
             c.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT")
-            c.execute("UPDATE users SET username = 'user' || id::text WHERE username IS NULL OR username = ''")
+            c.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_iterations INTEGER NOT NULL DEFAULT 310000")
+            c.execute("UPDATE users SET username = LOWER(REGEXP_REPLACE(SPLIT_PART(email, '@', 1), '[^a-zA-Z0-9_]', '', 'g')) || id::text WHERE username IS NULL OR username = ''")
             c.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
             c.execute("ALTER TABLE users ALTER COLUMN username SET NOT NULL")
             c.execute("CREATE TABLE IF NOT EXISTS konsumo_rate_limits (scope TEXT NOT NULL, identity_hash TEXT NOT NULL, window_start BIGINT NOT NULL, hit_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(scope, identity_hash, window_start))")
@@ -71,6 +72,8 @@ def _init_db_uncached(db_path=None):
         user_cols = {r["name"] for r in c.execute("PRAGMA table_info(users)")}
         if "username" not in user_cols:
             c.execute("ALTER TABLE users ADD COLUMN username TEXT")
+        if "password_iterations" not in user_cols:
+            c.execute("ALTER TABLE users ADD COLUMN password_iterations INTEGER NOT NULL DEFAULT 310000")
         import re
         for legacy in c.execute("SELECT id,email FROM users WHERE username IS NULL OR username = ''").fetchall():
             base = re.sub(r"[^a-z0-9_]", "", (legacy["email"] or "").split("@")[0].lower())[:14] or "user"
