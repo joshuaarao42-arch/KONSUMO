@@ -342,7 +342,7 @@ def make_handler(db):
             query = parse_qs(parsed.query)
             origin = self.headers.get("Origin")
             if method in ("POST", "PUT", "PATCH", "DELETE"):
-                if (origin and urlparse(origin).netloc.lower() != self.headers.get("Host", "").lower()) or self.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
+                if (not origin or urlparse(origin).netloc.lower() != self.headers.get("Host", "").lower()) or self.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
                     self.send_error(403, "Request rejected")
                     return
                 if path.startswith("/api/") and self.headers.get("X-KONSUMO-Request") != "1":
