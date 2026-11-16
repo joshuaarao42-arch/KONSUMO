@@ -52,6 +52,7 @@ def create_user(name, username, password, db_path=None):
                 "INSERT INTO users(name,email,username,password_salt,password_hash) VALUES (?,?,?,?,?) RETURNING id",
                 (name, legacy_email, username, salt, digest),
             ).fetchone()["id"]
+            c.execute("UPDATE consumption SET user_id=? WHERE user_id IS NULL", (uid,))
             return {"id": uid, "name": name, "username": username}
     except Exception as exc:
         if isinstance(exc, sqlite3.IntegrityError) or "unique" in str(exc).lower():
