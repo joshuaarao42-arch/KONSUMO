@@ -30,7 +30,7 @@ def _rate_limit(scope, limit, window_seconds, subject=""):
             """INSERT INTO konsumo_rate_limits(scope,identity_hash,window_start,hit_count)
                VALUES (?,?,?,1)
                ON CONFLICT(scope,identity_hash,window_start)
-               DO UPDATE SET hit_count=konsumo_rate_limits.hit_count+1
+               DO UPDATE SET hit_count=hit_count+1
                RETURNING hit_count""",
             (scope, identity, window_start),
         ).fetchone()
@@ -46,7 +46,7 @@ def _csrf_rejected(path):
     origin = request.headers.get("Origin")
     if origin:
         expected = f"{request.scheme}://{request.host}"
-        if urlsplit(origin).netloc.lower() != request.host.lower() or urlsplit(origin).scheme != request.scheme:
+        if urlsplit(origin).netloc.lower() != request.host.lower() or urlsplit(origin).scheme not in ("http", "https"):
             return True
     if request.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
         return True
@@ -92,7 +92,7 @@ def dispatch(subpath):
             init_db(DB)
         if method == "POST" and path == "/signup" and not _rate_limit("signup", 5, 3600):
             return make_response("Too many signup attempts. Please try again later.", 429)
-        if method == "POST" and path == "/login" and not _rate_limit("login", 10, 900, str(form.get("username", "")).lower()):
+        if method == "POST" and path == "/login" and (not _rate_limit("login_ip", 30, 900) or not _rate_limit("login_user", 10, 900, str(form.get("username", "")).lower())):
             return make_response("Too many login attempts. Please try again later.", 429)
         if method == "POST" and path == "/api/chat" and not _rate_limit("ai", 30, 3600):
             return make_response('{"error":"AI request limit reached. Try again later."}', 429, {"Content-Type":"application/json"})
@@ -104,7 +104,9 @@ def dispatch(subpath):
             if method=="GET": result=AppResponse(views.auth_page("login" if path=="/login" else "signup"))
             else:
                 try:
-                    if path=="/signup": user=create_user(form.get("name",""),form.get("username",""),form.get("password",""),DB)
+                    if path=="/signup":
+                        if form.get("password","") != form.get("confirm_password",""): raise AuthError("Your passwords do not match.")
+                        user=create_user(form.get("name",""),form.get("username",""),form.get("password",""),DB)
                     else: user=authenticate(form.get("username",""),form.get("password",""),DB)
                     session=create_session(user["id"],DB)
                     result=AppResponse(status=303,redirect_to="/",headers={"Set-Cookie":f"konsumo_session={session}; Path=/; HttpOnly; SameSite=Lax; Max-Age=1209600"+("; Secure" if secure else "")})
