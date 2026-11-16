@@ -95,6 +95,14 @@ def test_vercel_signup_login_logout_and_security_headers(tmp_path, monkeypatch):
     client = api.app.test_client()
     origin = {"Origin": "http://localhost"}
 
+    health = client.get("/api/index?__path=/api/health")
+    assert health.status_code == 200
+    assert health.get_json()["database"] == "connected"
+
+    mismatch = client.post("/signup", data={"name": "Bad", "username": "bad_user", "password": PASSWORD,
+                                             "confirm_password": "DifferentPassword!42"}, headers=origin)
+    assert mismatch.status_code == 400
+
     blocked = client.post("/signup", data={"name": "Bad", "username": "bad_user", "password": PASSWORD,
                                             "confirm_password": PASSWORD}, headers={"Origin": "https://evil.example"})
     assert blocked.status_code == 403
