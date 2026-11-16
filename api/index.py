@@ -28,7 +28,7 @@ def _rate_limit(scope, limit, window_seconds, subject=""):
             """INSERT INTO konsumo_rate_limits(scope,identity_hash,window_start,hit_count)
                VALUES (?,?,?,1)
                ON CONFLICT(scope,identity_hash,window_start)
-               DO UPDATE SET hit_count=hit_count+1
+               DO UPDATE SET hit_count=EXCLUDED.hit_count + konsumo_rate_limits.hit_count
                RETURNING hit_count""",
             (scope, identity, window_start),
         ).fetchone()
