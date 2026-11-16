@@ -27,7 +27,7 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 | **Live application** | [https://konsumo.vercel.app](https://konsumo.vercel.app) |
 | **Repository** | [joshuaarao42-arch/KONSUMO](https://github.com/joshuaarao42-arch/KONSUMO) |
 | **Language** | Python 3.10+ |
-| **Database** | SQLite |
+| **Database** | PostgreSQL (production) / SQLite (local development) |
 | **Interface** | Server-rendered web dashboard and CLI |
 
 ## Features
@@ -70,9 +70,24 @@ The project combines a lightweight web dashboard, a SQLite database, analytics m
 
 ### Account access
 - Create an account through the signup page and sign in through the login page. Multiple accounts are supported.
-- Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes rather than plain text.
-- Browser sessions use server-side session records and an HTTP-only cookie.
+- Accounts use a unique username for both signup and login; email is not required.
+- Passwords require at least 12 characters and at least three character types, then are stored as salted PBKDF2-HMAC-SHA256 hashes (600,000 iterations), never as plain text.
+- Session tokens are cryptographically random, stored as SHA-256 hashes, and delivered in HTTP-only, SameSite cookies.
 - Each account has its own isolated household readings, analytics, forecasts, and recommendations. Users cannot view, edit, or delete another account's records.
+
+## Security
+
+Konsumo includes several baseline protections for its web application:
+
+- Username validation and strong password rules.
+- PBKDF2-HMAC-SHA256 password hashing with a per-user random salt.
+- Random session tokens stored only as SHA-256 hashes; cookies are HTTP-only and SameSite.
+- Same-origin checks for state-changing requests and request markers for JSON API mutations.
+- Database-backed rate limits for signup, login, AI requests, and record changes.
+- Security headers including Content Security Policy, frame protection, MIME sniffing protection, and referrer policy.
+- Account-scoped database queries for household records and AI context.
+
+These controls reduce common risks but do not guarantee that any internet-facing application is immune to attacks. Keep dependencies and environment secrets current, and monitor the hosting and database logs.
 
 ## Screenshots
 
@@ -164,6 +179,7 @@ source .venv/bin/activate
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install pytest
 ```
 
 ### 4. Start the application
@@ -308,13 +324,13 @@ Contributions, bug reports, and improvement suggestions are welcome. Before subm
 5. Include screenshots when changing the user interface.
 6. Open a pull request describing the change.
 
-The repository currently does not include a dedicated automated test suite, so changes should be manually verified until tests are added.
+Automated regression tests cover username authentication, password hashing and validation, session handling, legacy-account migration, account-level record isolation, and the Vercel signup/login flow. GitHub Actions runs Python compilation and the test suite on pushes and pull requests.
 
 ## Current Limitations
 
 - Only electricity and water resources are supported.
 - Each registered account has a separate household workspace; there is no shared-household invitation feature yet.
-- There is no password-reset or email-verification workflow.
+- There is no password-reset workflow. Account access uses usernames and passwords; email verification is not required.
 - Forecast quality depends on the amount and consistency of recorded history.
 - Cost estimates depend on the tariff configuration and may not match a provider's complete bill, taxes, fees, or adjustments.
 - Persistent storage must be configured on the hosting platform to retain production data.
