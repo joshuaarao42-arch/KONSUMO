@@ -23,7 +23,7 @@ def _rate_limit(scope, limit, window_seconds, subject=""):
     identity = hashlib.sha256((_client_ip() + "|" + subject).encode()).hexdigest()
     now = int(time.time())
     window_start = now - (now % window_seconds)
-    with connect_db() as conn:
+    with connect_db(DB) as conn:
         row = conn.execute(
             """INSERT INTO konsumo_rate_limits(scope,identity_hash,window_start,hit_count)
                VALUES (?,?,?,1)
