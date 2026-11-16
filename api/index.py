@@ -12,8 +12,6 @@ app=Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024
 DB=os.environ.get("DATABASE_URL") or DEFAULT_DB_PATH
 
-@app.route("/",defaults={"subpath":""},methods=["GET","POST"])
-@app.route("/<path:subpath>",methods=["GET","POST"])
 def _client_ip():
     forwarded = request.headers.get("x-vercel-forwarded-for", "")
     if forwarded:
@@ -70,6 +68,8 @@ def security_headers(response):
     return response
 
 
+@app.route("/",defaults={"subpath":""},methods=["GET","POST"])
+@app.route("/<path:subpath>",methods=["GET","POST"])
 def dispatch(subpath):
     # Vercel rewrites requests to /api/index; recover the original URL path.
     path=request.args.get("__path") or ("/"+subpath if subpath else "/")
