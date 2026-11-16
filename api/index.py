@@ -42,10 +42,10 @@ from konsumo.database import connect as connect_db
 
 def _csrf_rejected(path):
     origin = request.headers.get("Origin")
-    if origin:
-        expected = f"{request.scheme}://{request.host}"
-        if urlsplit(origin).netloc.lower() != request.host.lower() or urlsplit(origin).scheme not in ("http", "https"):
-            return True
+    if not origin:
+        return True
+    if urlsplit(origin).netloc.lower() != request.host.lower() or urlsplit(origin).scheme not in ("http", "https"):
+        return True
     if request.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
         return True
     if path.startswith("/api/") and request.method in ("POST", "PUT", "PATCH", "DELETE"):
