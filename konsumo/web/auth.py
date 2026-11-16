@@ -17,9 +17,9 @@ class AuthError(ValueError):
     pass
 
 
-def _hash_password(password, salt=None):
+def _hash_password(password, salt=None, iterations=ITERATIONS):
     salt = salt or secrets.token_bytes(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, ITERATIONS)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
     return salt.hex(), digest.hex()
 
 
@@ -64,15 +64,19 @@ def authenticate(username, password, db_path=None):
     username = (username or "").strip().lower()
     with connect(db_path) as c:
         user = c.execute(
-            "SELECT id,name,username,password_salt,password_hash FROM users WHERE lower(username)=?",
+            "SELECT id,name,username,password_salt,password_hash,password_iterations FROM users WHERE lower(username)=?",
             (username,),
         ).fetchone()
     if not user:
         _hash_password(password or "", bytes(16))
         raise AuthError("Incorrect username or password.")
-    _, candidate = _hash_password(password or "", bytes.fromhex(user["password_salt"]))
+    _, candidate = _hash_password(password or "", bytes.fromhex(user["password_salt"]), int(user["password_iterations"] or 310000))
     if not hmac.compare_digest(candidate, user["password_hash"]):
         raise AuthError("Incorrect username or password.")
+    if int(user["password_iterations"] or 310000) < ITERATIONS:
+        _, upgraded = _hash_password(password, bytes.fromhex(user["password_salt"]), ITERATIONS)
+        with connect(db_path) as c:
+            c.execute("UPDATE users SET password_hash=?,password_iterations=? WHERE id=?", (upgraded, ITERATIONS, user["id"]))
     return {"id": user["id"], "name": user["name"], "username": user["username"]}
 
 
