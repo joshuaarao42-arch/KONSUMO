@@ -94,6 +94,8 @@ def dispatch(subpath):
             return make_response("Too many signup attempts. Please try again later.", 429)
         if method == "POST" and path == "/login" and (not _rate_limit("login_ip", 30, 900) or not _rate_limit("login_user", 10, 900, str(form.get("username", "")).lower())):
             return make_response("Too many login attempts. Please try again later.", 429)
+        if method == "POST" and path == "/api/seed" and not _rate_limit("seed", 5, 3600):
+            return make_response('{"error":"Sample-data generation limit reached. Try again later."}', 429, {"Content-Type":"application/json"})
         if method == "POST" and path == "/api/chat" and not _rate_limit("ai", 30, 3600):
             return make_response('{"error":"AI request limit reached. Try again later."}', 429, {"Content-Type":"application/json"})
         if method == "POST" and path.startswith("/records") and not _rate_limit("records", 120, 3600):
