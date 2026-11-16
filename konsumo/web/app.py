@@ -340,6 +340,14 @@ def make_handler(db):
             parsed = urlparse(self.path)
             path = parsed.path.rstrip("/") or "/"
             query = parse_qs(parsed.query)
+            origin = self.headers.get("Origin")
+            if method in ("POST", "PUT", "PATCH", "DELETE"):
+                if (origin and urlparse(origin).netloc.lower() != self.headers.get("Host", "").lower()) or self.headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
+                    self.send_error(403, "Request rejected")
+                    return
+                if path.startswith("/api/") and self.headers.get("X-KONSUMO-Request") != "1":
+                    self.send_error(403, "Request rejected")
+                    return
             form = {}
             if method == "POST":
                 length = int(self.headers.get("Content-Length") or 0)
@@ -395,6 +403,16 @@ def make_handler(db):
                        if isinstance(resp.body, str) else resp.body)
             self.send_response(resp.status)
             self.send_header("Content-Type", resp.content_type)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+            self.send_header("Content-Security-Policy", "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com")
+            if path.startswith("/api/"):
+                self.send_header("Cache-Control", "no-store")
+            if secure:
+                self.send_header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
             self.send_header("Content-Length", str(len(payload)))
             if resp.redirect_to:
                 self.send_header("Location", resp.redirect_to)
