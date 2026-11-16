@@ -149,7 +149,7 @@ def auth_page(mode, error=None, values=None):
 <button class="submit" type="submit">{button}</button></form><p class="switch">{alternate}</p>
 </section><div class="auth-foot">Private by design · Your household data stays yours</div></main>
 <script>
-(function(){const form=document.getElementById('auth-form');if(!form)return;form.addEventListener('submit',function(e){const p=form.querySelector('#password');const c=form.querySelector('#confirm_password');if(c&&p.value!==c.value){e.preventDefault();c.setCustomValidity('Passwords do not match.');c.reportValidity();}else if(c){c.setCustomValidity('');}});const c=form.querySelector('#confirm_password');if(c)c.addEventListener('input',()=>c.setCustomValidity(''));})();
+(function(){{const form=document.getElementById('auth-form');if(!form)return;form.addEventListener('submit',function(e){{const p=form.querySelector('#password');const c=form.querySelector('#confirm_password');if(c&&p.value!==c.value){{e.preventDefault();c.setCustomValidity('Passwords do not match.');c.reportValidity();}}else if(c){{c.setCustomValidity('');}}}});const c=form.querySelector('#confirm_password');if(c)c.addEventListener('input',()=>c.setCustomValidity(''));}})();
 </script></body></html>'''
 
 
