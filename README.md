@@ -87,6 +87,8 @@ Konsumo includes several baseline protections for its web application:
 - Security headers including Content Security Policy, frame protection, MIME sniffing protection, and referrer policy.
 - Account-scoped database queries for household records and AI context.
 
+Existing email-based accounts are migrated to generated usernames based on the previous email prefix and account ID. Their existing passwords remain valid; the first successful login upgrades the stored password hash to the stronger iteration count.
+
 These controls reduce common risks but do not guarantee that any internet-facing application is immune to attacks. Keep dependencies and environment secrets current, and monitor the hosting and database logs.
 
 ## Screenshots
@@ -256,6 +258,8 @@ Example request for a tariff quote:
 ```bash
 curl -X POST http://127.0.0.1:5000/api/quote \
   -H "Content-Type: application/json" \
+  -H "Origin: http://127.0.0.1:5000" \
+  -H "X-KONSUMO-Request: 1" \
   -d '{"resource":"electricity","amount":120}'
 ```
 
